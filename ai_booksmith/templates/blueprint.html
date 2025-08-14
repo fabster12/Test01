@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}The Blueprint - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4>Step 2: The Blueprint</h4>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ project.title }}</h5>
+                <p class="card-text text-muted">"{{ project.logline }}"</p>
+                <hr>
+
+                {% if project.synopsis and project.back_cover_blurb %}
+                    <!-- Display Synopsis and Blurb if they exist -->
+                    <h6>Generated Synopsis:</h6>
+                    <div class="p-3 bg-light rounded mb-3" style="white-space: pre-wrap;">{{ project.synopsis }}</div>
+
+                    <h6>Generated Back Cover Blurb:</h6>
+                    <div class="p-3 bg-light rounded mb-4" style="white-space: pre-wrap;">{{ project.back_cover_blurb }}</div>
+
+                    <div class="d-flex justify-content-between">
+                        <form action="{{ url_for('generate_blueprint', project_id=project.id) }}" method="post">
+                            <button type="submit" class="btn btn-warning">Try Again</button>
+                        </form>
+                        <form action="{{ url_for('writing_room', project_id=project.id) }}" method="get">
+                             <button type="submit" class="btn btn-success">Approve and Continue to Writing Room</button>
+                        </form>
+                    </div>
+
+                {% else %}
+                    <!-- Show button to generate if they don't exist -->
+                    <p>Now, let's generate the detailed plot of your story and the text for the back cover.</p>
+                    <form action="{{ url_for('generate_blueprint', project_id=project.id) }}" method="post">
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Generate Synopsis & Blurb</button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Final Assembly - {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h4>Step 4: Final Assembly</h4>
+    <p class="text-muted">Your book is written! Let's package it for publishing.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                Project Summary
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ project.title }}</h5>
+                <p class="card-text"><strong>Logline:</strong> {{ project.logline }}</p>
+                <p class="card-text"><strong>Chapters Written:</strong> {{ project.chapters | length }}</p>
+
+                <hr>
+
+                <p>The next step will assemble everything into a downloadable ZIP file containing:</p>
+                <ul>
+                    <li>A print-ready PDF manuscript of your book.</li>
+                    <li>A separate PDF file for the book cover.</li>
+                    <li>A text file with suggested KDP keywords and categories.</li>
+                </ul>
+
+                <form action="{{ url_for('build_package', project_id=project.id) }}" method="post">
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-lg btn-success">Build My Book Package</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

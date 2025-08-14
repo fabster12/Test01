@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}New Book - AI Booksmith{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center">Start a New Book Project</h3>
+                <p class="card-text text-center text-muted">Provide a genre and a short description, and the AI will brainstorm some book ideas for you.</p>
+
+                <form action="{{ url_for('generate_ideas') }}" method="post" class="mt-4">
+                    <div class="mb-3">
+                        <label for="genre" class="form-label">Genre</label>
+                        <input type="text" class="form-control" id="genre" name="genre" placeholder="e.g., Science Fiction, Cozy Mystery, Fantasy Adventure" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Brief Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="e.g., 'A story about a lost robot trying to find its way home in a futuristic city.' or 'A detective solves a murder in a quiet English village during winter.'" required></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Generate Ideas</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

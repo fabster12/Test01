@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ project.title }}</title>
+    <style>
+        @page {
+            size: 6in 9in; /* Standard book size */
+            margin: 1in;
+        }
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            font-family: 'Helvetica', sans-serif;
+            page-break-before: always; /* Each chapter starts on a new page */
+        }
+        h1 {
+            text-align: center;
+            font-size: 36pt;
+            margin-top: 2in;
+        }
+        .title-page-author {
+            text-align: center;
+            font-size: 18pt;
+            margin-top: 0.5in;
+        }
+        img {
+            max-width: 80%;
+            display: block;
+            margin: 1em auto;
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    <!-- Title Page -->
+    <h1 class="title-page-title">{{ project.title }}</h1>
+    <p class="title-page-author">By A.I. Author</p>
+
+    <!-- Chapters -->
+    {% for chapter in project.chapters %}
+        <h3>Chapter {{ loop.index }}: {{ chapter.title }}</h3>
+        <p>{{ chapter.text | safe }}</p>
+
+        {% if chapter.images %}
+            {% for image in chapter.images %}
+                <img src="{{ image.url }}" alt="{{ image.prompt }}">
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+</body>
+</html>
