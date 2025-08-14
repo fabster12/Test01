@@ -1,0 +1,163 @@
+/***************************************************************************************/
+/*
+/*		Designed by 'AS Designing'
+/*		Web: http://www.asdesigning.com
+/*		Web: http://www.astemplates.com
+/*
+/*		Note: Design for Landscape tablets
+/*
+/***************************************************************************************/
+
+@media (max-width: 979px)
+{
+
+	#logo
+	{
+		margin-left: 20px;
+		margin-right: 0px;
+	}
+
+	.thumbnails
+	{
+		margin-left: -12px;
+	}
+
+	.thumbnails > li
+	{
+		margin-left: 12px;
+	}
+
+    #back-top
+	{
+		display: none !important;
+	}
+
+	.row-fluid
+	{
+		margin-left: -12px;
+	}
+
+	.row-fluid [class*="itemSpan"],
+	.row-fluid [class*="span"]
+	{
+		padding-left: 12px;
+	}
+
+	.fluid
+	{
+		margin-left: -12px;
+	}
+
+	h1
+	{
+	}
+
+	.sequence-slider > .sequence-canvas li > .info .camera_caption
+	{
+		font-size: 12px !important;
+	}
+
+	.navigation ul.sf-menu > li > a,
+	.navigation ul.sf-menu > li > span
+	{
+		font-size: 14px;
+	}
+
+	.radial-progress
+	{
+		width: 173px;
+		height: 173px;
+	}
+
+	.radial-progress .circle .mask
+	{
+		clip: rect(0px, 173px, 173px, 86px);
+		height: 173px;
+		width: 173px;
+	}
+
+	.radial-progress .circle .mask .fill
+	{
+		width: 157px;
+		height: 157px;
+		clip: rect(0px, 86px, 173px, 0px);
+	}
+
+	.radial-progress .inset
+	{
+		height: 157px;
+		width: 157px;
+	}
+
+	.radial-progress .inset .percentage
+	{
+		left: 18.5px;
+		top: 57px;
+	}
+
+	.team .item_container .social_team li a
+	{
+		font-size: 20px;
+		line-height: 37px;
+		width: 37px;
+	}
+
+	.pricing .row-fluid .item_container .price
+	{
+		font-size: 50px;
+	}
+
+	.blog .item .item_content .item_introtext
+	{
+		font-size: 17px;
+		text-transform: none;
+		line-height: 25px;
+		left: 10px;
+		right: 10px;
+		bottom: 30px;
+	}
+
+	.blog .item .item_content .item_title
+	{
+		top: 10px;
+		left: 10px;
+		margin-right: 10px;
+	}
+
+	.blog .item .item_content .item_info
+	{
+		left: 10px;
+		bottom: 5px;
+	}
+
+	.gallery-grid .view p
+	{
+		font-size: 12px;
+		line-height: 14px;
+	}
+
+	.gallery-item.gallery-grid .view .item_title
+	{
+		font-size: 14px;
+		margin-bottom: 10px !important;
+	}
+
+	.gallery-grid .view .mask .mask_wrap .mask_cont,
+	.gallery-grid .view .content .mask_wrap .mask_cont
+	{
+		padding: 5%;
+	}
+
+	.page-gallery h3,
+	.gallery-grid .view .mask .mask_wrap .mask_cont h3,
+	.gallery-grid .view .content .mask_wrap .mask_cont h3
+	{
+	    font-size: 12px;
+	}
+
+	.page-category__team .social_team li a
+	{
+		width: 46px;
+		line-height: 46px;
+	}
+}

@@ -1,0 +1,223 @@
+.rotated-y {
+    transform: rotateY(90deg);
+}
+
+.rotated-x {
+    transform: rotateX(90deg);
+}
+
+
+.color {
+    -webkit-filter: grayscale(1);
+    -o-filter: grayscale(1);
+    filter: grayscale(1);
+}
+
+li.visible:hover .color {
+    -webkit-filter: grayscale(0);
+    -o-filter: grayscale(0);
+    filter: grayscale(0);
+}
+
+.gray {
+    -webkit-filter: grayscale(0);
+    -o-filter: grayscale(0);
+    filter: grayscale(0);
+}
+
+li.visible:hover .gray {
+    -webkit-filter: grayscale(1);
+    -o-filter: grayscale(1);
+    filter: grayscale(1);
+}
+
+.blur {
+    -webkit-filter: blur(0px);
+    -o-filter: blur(0px);
+    filter: blur(0px);
+}
+
+li.visible:hover .blur {
+    -webkit-filter: blur(3px);
+    -o-filter: blur(3px);
+    filter: blur(3px);
+}
+
+
+.brightness {
+    -webkit-filter: brightness(1);
+    -o-filter: brightness(1);
+    filter: brightness(1);
+}
+
+li.visible:hover .brightness {
+    -webkit-filter: brightness(1.5);
+    -o-filter: brightness(1.5);
+    filter: brightness(1.5);
+}
+
+.sepia {
+    -webkit-filter: sepia(0);
+    -o-filter: sepia(0);
+    filter: sepia(0);
+}
+
+li.visible:hover .sepia {
+    -webkit-filter: sepia(1);
+    -o-filter: sepia(1);
+    filter: sepia(1);
+}
+
+
+.contrast {
+    -webkit-filter: contrast(1);
+    -o-filter: contrast(1);
+    filter: contrast(1);
+}
+li.visible:hover .contrast {
+    -webkit-filter: contrast(0.5);
+    -o-filter: contrast(0.5);
+    filter: contrast(0.5);
+}
+
+.hue-rotate {
+    -webkit-filter: hue-rotate(0deg);
+    -o-filter: hue-rotate(0deg);
+    filter: hue-rotate(0deg);
+}
+
+li.visible:hover  .hue-rotate {
+    -webkit-filter: hue-rotate(180deg);
+    -o-filter: hue-rotate(180deg);
+    filter: hue-rotate(180deg);
+}
+
+.brightness1 {
+    -webkit-filter: brightness(1);
+    -o-filter: brightness(1);
+    filter: brightness(1);
+}
+
+li.visible:hover .brightness1 {
+    -webkit-filter: brightness(0.5);
+    -o-filter: brightness(0.5);
+    filter: brightness(0.5);
+}
+
+
+.invert {
+    -webkit-filter: invert(0);
+    -o-filter: invert(0);
+    filter: invert(0);
+}
+
+li.visible:hover .invert {
+    -webkit-filter: invert(1);
+    -o-filter: invert(1);
+    filter: invert(1);
+}
+
+.saturate {
+    -webkit-filter: saturate(1);
+    -o-filter: saturate(1);
+    filter: saturate(1);
+}
+
+li.visible:hover .saturate {
+    -webkit-filter: saturate(2);
+    -o-filter: saturate(2);
+    filter: saturate(2);
+}
+
+
+li.visible:hover.caption1 img {
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.caption1 img {
+    z-index: 10!important;
+    position: absolute;
+}
+
+.creative-gallery-container ul.gallery li.caption1 .creative-gallery-icons-wrapper {
+    width: 100%;
+    height: 100%;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.caption1 .creative-gallery-icon-zoom {
+    top: initial!important;
+    right: initial!important;
+    bottom: 10%!important;
+    left: 20%!important;
+    z-index: 9!important;
+    width: 20%!important;
+    height: 20%!important;
+    transform: rotateY(90deg);
+    -webkit-transition-delay: 0.2s!important;
+    -o-transition-delay: 0.2s!important;
+    transition-delay: 0.2s!important;
+}
+.caption1 .creative-gallery-icon-link {
+    top: initial!important;
+    right: 20%!important;
+    bottom: 10%!important;
+    left: initial!important;
+    z-index: 9!important;
+    width: 20%!important;
+    height: 20%!important;
+    transform: rotateY(90deg);
+    -webkit-transition-delay: 0.2s!important;
+    -o-transition-delay: 0.2s!important;
+    transition-delay: 0.2s!important;
+}
+
+
+.zoom {
+    -webkit-transform: scale(1, 1);
+    -moz-transform: scale(1, 1);
+    -ms-transform: scale(1, 1);
+    -o-transform: scale(1, 1);
+    transform: scale(1, 1);
+}
+
+li.visible:hover .zoom {
+    -webkit-transform: scale(1.2, 1.2);
+    -moz-transform: scale(1.2, 1.2);
+    -ms-transform: scale(1.2, 1.2);
+    -o-transform: scale(1.2, 1.2);
+    transform: scale(1.2, 1.2);
+}
+
+
+li.visible:hover .rotate {
+    --webkit-transform: scale(1.2) rotate(10deg);
+    -ms-transform: scale(1.2) rotate(10deg);
+    -o-transform: scale(1.2) rotate(10deg);
+    transform: scale(1.2) rotate(10deg);
+}
+
+.direction-aware {
+
+}
+
+.direction-aware .creative-gallery-icon {
+    z-index: 10!important;
+}
+
+.direction-aware .overlay {
+    z-index: 9!important;
+    background-color: rgba(0,0,0,0.6);
+}
+
+.direction-aware img {
+    position: absolute;
+    z-index: 8!important;
+}

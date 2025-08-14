@@ -1,0 +1,260 @@
+/***************************************************************************************/
+/*
+/*		Author: AS Designing
+/*		Author URI: http://www.asdesigning.com
+/*		Theme URI: http://www.astemplates.com
+/*
+/*		Note: Design for Portrait tablets
+/*
+/***************************************************************************************/
+
+@media (max-width: 768px)
+{
+
+	body
+	{
+		padding: 0;
+	}
+
+	body .row-container
+	{
+		padding: 0 20px;
+	}
+
+	#wrapper
+	{
+		margin: 0;
+	}
+
+	#footer-wrapper
+	{
+		height: auto;
+	}
+
+	#push
+	{
+		display: none;
+	}
+
+	#logo
+	{
+		float: right;
+		margin-left: 0;
+		margin-right: 20px;
+		text-align: center;
+	}
+
+	#logo a
+	{
+		margin: 0;
+	}
+
+	.blog .item .item_content .item_introtext
+	{
+		font-size: 14px;
+		line-height: 17px;
+	}
+
+	.moduletable.devices
+	{
+		margin-bottom: 40px;
+	}
+
+	.team
+	{
+		font-size: 0;
+		line-height: 0;
+	}
+
+	.team .item
+	{
+		font-size: 17px;
+		line-height: 25px;
+		display: inline-block !important;
+		width: 50% !important;
+		vertical-align: top;
+	}
+
+	.team .item .item_img a,
+	.team .item .lazy_container
+	{
+		width: 100% !important;
+	}
+
+	.pricing .row-fluid .item + .item .item_container
+	{
+		border-left-color: #c3c3c3;
+	}
+
+	.achievements
+	{
+		font-size: 0;
+		line-height: 0;
+	}
+
+	.achievements .item
+	{
+		font-size: 17px;
+		line-height: 25px;
+		display: inline-block !important;
+		width: 50% !important;
+		vertical-align: top;
+	}
+
+	.gallery .mix
+	{
+		width: 50% !important;
+	}
+
+	.blog .item
+	{
+		width: 50% !important;
+		float: left !important;
+	}
+
+	.pricing .item
+	{
+		width: 50% !important;
+		float: left !important;
+	}
+
+	.body__home #menu-row
+	{
+		position: static;
+	}
+
+	.sequence-prev, .sequence-next
+	{
+		width: 25px !important;
+	}
+
+	.sequence-slider > .sequence-canvas li > .info
+	{
+		left: 50px !important;
+		right: 50px;
+	}
+
+	.navigation ul.sf-menu > li > a,
+	.navigation ul.sf-menu > li > span
+	{
+		padding: 0 25px;
+		font-size: 16px;
+		line-height: 50px;
+	}
+
+	.navigation
+	{
+		float: none;
+		margin-right: 0;
+		padding: 20px 20px;
+	}
+
+	.nav.menu.pull-right.nav-pills
+	{
+		float: none;
+		text-align: center;
+	}
+
+	.nav.menu.pull-right.nav-pills li
+	{
+		float: none;
+		display: inline-block;
+	}
+
+	.social
+	{
+		text-align: left;
+		padding: 10px 0;
+	}
+
+	[class*="cols"] [class*="span"]
+	{
+		width: 100%;
+	}
+
+	.item-image.blog-image
+	{
+		float: none;
+		margin: 0 0 20px 0;
+	}
+
+	.row-fluid [class*="itemSpan"],
+	.row-fluid [class*="span"]
+	{
+		display: block;
+		float: none;
+		margin-left: 0;
+		width: auto;
+	}
+
+	.page-gallery ul.gallery .gallery-grid
+	{
+		width: 49.99%;
+		max-width: 49.99%;
+	}
+
+	.page-gallery ul.gallery .gallery-grid .view .item_img
+	{
+		max-width: 100%;
+	}
+
+	.page-gallery ul.gallery .gallery-grid .view .item_img a
+	{
+		display: block;
+	}
+
+	.img-full__left.span5
+	{
+		width: 50%;
+	}
+
+	.contact_details .contact_details_item
+	{
+		width: 30%;
+		float: left;
+	}
+
+	.page-gallery ul.gallery .gallery-grid .view
+	{
+		margin: 0 auto;
+	}
+
+	.page-gallery ul.gallery .gallery-grid .view .item_img
+	{
+		float: none;
+		margin: 0 !important;
+	}
+
+	.mod-search__aside .mod-search_searchword
+	{
+		width: 50%;
+	}
+
+	#back-top
+	{
+		display: none !important;
+	}
+
+	.scrolled #logo h1 span
+	{
+		font-size: 60px;
+		line-height: 60px;
+	}
+
+	.scrolled #logo
+	{
+		margin-top: 0px;
+		padding-top: 10px;
+	}
+
+	#logo
+	{
+		margin-top: 0px;
+		padding-top: 10px;
+	}
+
+	.caroufredsel_prev
+	{
+		left: -4%;
+	}
+}

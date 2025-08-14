@@ -1,0 +1,181 @@
+/***************************************************************************************/
+/*
+/*		Author: AS Designing
+/*		Author URI: http://www.asdesigning.com
+/*		Theme URI: http://www.astemplates.com
+/*
+/*		Note: Design for a width of 480px - Mobile (Landscape)
+/*
+/***************************************************************************************/
+
+@media (max-width: 480px)
+{
+	#logo h1 span
+	{
+		font-size: 34px;
+	}
+
+	.contact_form
+	{
+		width: 100%;
+	}
+
+	.team .item, .achievements .item, .blog .item, .pricing .item
+	{
+		width: 100% !important;
+	}
+
+	.gallery .filters a
+	{
+		margin: 0 3px;
+	}
+
+	.gallery .item
+	{
+		width: auto !important;
+		max-width: 100%;
+	}
+
+	.blog .item .lazy_container
+	{
+		width: 100% !important;
+	}
+
+	.caroufredsel_prev, .caroufredsel_next
+	{
+		top: 400px !important;
+		margin-top: 0 !important;
+	}
+
+	.page-registration form input,
+	.page-remind form input,
+	.page-reset form input,
+	.page-login form input,
+	.page-login form input,
+	.page-profile__edit form input,
+	.page-registration form select,
+	.page-remind form select,
+	.page-reset form select,
+	.page-login form select,
+	.page-login form select,
+	.page-profile__edit form select
+	{
+		width: 100%;
+	}
+
+	.page-registration form label,
+	.page-remind form label,
+	.page-reset form label,
+	.page-login form label,
+	.page-login form label,
+	.page-profile__edit form label
+	{
+		display: inline-block;
+	}
+
+	.pagination ul li
+	{
+		display: none;
+	}
+
+	.pagination ul li.pagination-prev,
+	.pagination ul li.pagination-next
+	{
+		display: inline-block;
+	}
+
+	.page-gallery .item_img.img-intro
+	{
+		float: none;
+		margin: 0 0 25px 0;
+	}
+
+	.page-gallery ul.gallery .gallery-item
+	{
+		text-align: center;
+		max-width: 100% !important;
+		width: 100% !important;
+	}
+
+	.page-gallery ul.gallery .gallery-item .item_img
+	{
+		float: none;
+		margin: 0 auto 25px !important;
+		max-width: 100%;
+	}
+
+	.page-gallery ul.gallery .gallery-item .item_img .lazy_container
+	{
+		width: 100% !important;
+	}
+
+	.gallery-item.gallery-grid .view .item_title
+	{
+		font-size: 16px;
+		margin-bottom: 10px !important;
+	}
+
+	.img-full__left.span5
+	{
+		width: 100%;
+		margin-right: 0;
+	}
+
+	.item_img
+	{
+		float: none;
+		margin: 0 0 25px 0;
+		max-width: 100%;
+	}
+
+	.page-archive_filters select
+	{
+		display: block;
+		width: 100%;
+	}
+
+	h3
+	{
+		font-size: 37px;
+		line-height: 44px;
+	}
+
+	.contact_details .contact_details_item
+	{
+		width: 100%;
+		float: none;
+	}
+
+	.mod-search__aside .mod-search_searchword
+	{
+		width: 100%;
+	}
+
+	.mod-login__aside .mod-login_userdata
+	{
+		width: 100%;
+		overflow: hidden;
+	}
+
+	div.modal
+	{
+		position: absolute;
+	}
+
+	#error input
+	{
+		width: 200px;
+	}
+
+	.mod-custom__video .module-content .module-content-inner
+	{
+		font-size: 17px;
+		line-height: 25px;
+	}
+
+	.mod-custom__video .module-content .module-content-inner p
+	{
+		padding-bottom: 0;
+	}
+
+}

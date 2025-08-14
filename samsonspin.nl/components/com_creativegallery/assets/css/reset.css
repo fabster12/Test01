@@ -1,0 +1,46 @@
+.creative-gallery-container html, .creative-gallery-container body, .creative-gallery-container .creative-gallery-container div, .creative-gallery-container .creative-gallery-container span, .creative-gallery-container applet, .creative-gallery-container object, .creative-gallery-container iframe, .creative-gallery-container
+h1, .creative-gallery-container h2, .creative-gallery-container h3, .creative-gallery-container h4, .creative-gallery-container h5, .creative-gallery-container h6, .creative-gallery-container p, .creative-gallery-container blockquote, .creative-gallery-container pre, .creative-gallery-container
+a, .creative-gallery-container abbr, .creative-gallery-container acronym, .creative-gallery-container address, .creative-gallery-container big, .creative-gallery-container cite, .creative-gallery-container code, .creative-gallery-container
+del, .creative-gallery-container dfn, .creative-gallery-container em, .creative-gallery-container img, .creative-gallery-container ins, .creative-gallery-container kbd, .creative-gallery-container q, .creative-gallery-container s, .creative-gallery-container samp, .creative-gallery-container
+small, .creative-gallery-container strike, .creative-gallery-container strong, .creative-gallery-container sub, .creative-gallery-container sup, .creative-gallery-container tt, .creative-gallery-container var, .creative-gallery-container
+b, .creative-gallery-container u, .creative-gallery-container i, .creative-gallery-container center, .creative-gallery-container
+dl, .creative-gallery-container dt, .creative-gallery-container dd, .creative-gallery-container ol, .creative-gallery-container ul, .creative-gallery-container li, .creative-gallery-container
+fieldset, .creative-gallery-container form, .creative-gallery-container label, .creative-gallery-container legend, .creative-gallery-container
+table, .creative-gallery-container caption, .creative-gallery-container tbody, .creative-gallery-container tfoot, .creative-gallery-container thead, .creative-gallery-container tr, .creative-gallery-container th, .creative-gallery-container td, .creative-gallery-container
+article, .creative-gallery-container aside, .creative-gallery-container canvas, .creative-gallery-container details, .creative-gallery-container embed, .creative-gallery-container
+figure, .creative-gallery-container figcaption, .creative-gallery-container footer, .creative-gallery-container header, .creative-gallery-container hgroup, .creative-gallery-container
+menu, .creative-gallery-container nav, .creative-gallery-container output, .creative-gallery-container ruby, .creative-gallery-container section, .creative-gallery-container summary, .creative-gallery-container
+time, .creative-gallery-container mark, .creative-gallery-container audio, .creative-gallery-container video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	max-height: initial;
+	min-height: initial;
+	max-width: initial;
+	min-width: initial;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+.creative-gallery-container article, .creative-gallery-container aside, .creative-gallery-container details, .creative-gallery-container figcaption,  .creative-gallery-container figure,  .creative-gallery-container footer, .creative-gallery-container header, .creative-gallery-container hgroup, .creative-gallery-container menu, .creative-gallery-container nav, .creative-gallery-container section {
+	display: block;
+}
+.creative-gallery-container body {
+	line-height: 1;
+}
+.creative-gallery-container ol, .creative-gallery-container ul, .creative-gallery-container li {
+	list-style: none;
+	list-style-type: none;
+}
+.creative-gallery-container blockquote,  .creative-gallery-container q {
+	quotes: none;
+}
+.creative-gallery-container blockquote:before,  .creative-gallery-container blockquote:after,  .creative-gallery-container q:before,  .creative-gallery-container q:after {
+	content: '';
+	content: none;
+}
+.creative-gallery-container table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}

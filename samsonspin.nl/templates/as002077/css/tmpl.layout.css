@@ -1,0 +1,40 @@
+
+/*******************************************************************************************/
+/*
+/*		Designed by 'AS Designing'
+/*		Web: http://www.asdesigning.com
+/*		Web: http://www.astemplates.com
+/*		License: GNU/GPL
+/*
+/*******************************************************************************************/
+
+.row-container
+{
+	max-width: 1210px;
+	margin-right: auto;
+	margin-left: auto;
+   *zoom: 1;
+}
+
+.row-container:before, .row-container:after
+{
+	display: table;
+	content: "";
+	line-height: 0;
+}
+
+.row-container:after
+{
+	clear: both;
+}
+
+.row-container img
+{
+    opacity: 0;
+    transition: opacity 1s ease-in-out 0s;
+}
+
+.row-container.visible img
+{
+    opacity: 1;
+}
