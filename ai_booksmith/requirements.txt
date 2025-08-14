@@ -1,5 +1,5 @@
 Flask
 openai
-git+https://github.com/Leonardo-Interactive/leonardo-python-sdk.git
+requests
 WeasyPrint
 python-dotenv
