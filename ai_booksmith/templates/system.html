@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}System Information - AI Booksmith{% endblock %}
+
+{% block content %}
+<h2>System Information</h2>
+<p>This page shows the current configuration and active models for the AI Booksmith application.</p>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h4>Application Configuration</h4>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>Flask Secret Key:</strong> <code>{{ config.flask_secret_key[:10] }}...</code> (Truncated for security)</li>
+        <li class="list-group-item"><strong>Generated Books Directory:</strong> <code>{{ config.generated_books_dir }}</code></li>
+        <li class="list-group-item"><strong>SSL Certificate File:</strong> <code>{{ config.ssl_cert_file or 'Not Set' }}</code></li>
+    </ul>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h4>Active AI Models</h4>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <strong>Active OpenAI Model:</strong>
+            <code>{{ config.active_openai_model }}</code>
+            {% set openai_model = model_config.openai | selectattr('name', 'equalto', config.active_openai_model) | first %}
+            {% if openai_model %}
+                <small class="text-muted d-block">ID: {{ openai_model.id }} | Cost: ${{ openai_model.cost_per_million_tokens }}/M tokens</small>
+            {% endif %}
+        </li>
+        <li class="list-group-item">
+            <strong>Active Leonardo Model:</strong>
+            <code>{{ config.active_leonardo_model }}</code>
+            {% set leonardo_model = model_config.leonardo | selectattr('name', 'equalto', config.active_leonardo_model) | first %}
+            {% if leonardo_model %}
+                <small class="text-muted d-block">ID: {{ leonardo_model.id }}</small>
+            {% endif %}
+        </li>
+    </ul>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+</div>
+{% endblock %}

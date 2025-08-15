@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Writing Room - AI Booksmith{% endblock %}
+
+{% block content %}
+<h2>Writing Room: {{ project.title }}</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <h4>Chapters</h4>
+        <div class="list-group">
+            {% for chapter in project.chapters %}
+            <a href="{{ url_for('fiction.writing_room', project_id=project.id, chapter_index=loop.index0) }}"
+               class="list-group-item list-group-item-action {% if loop.index0 == current_chapter_index %}active{% endif %}">
+                Ch {{ loop.index }}: {{ chapter.title }}
+                <span class="badge
+                    {% if chapter.status == 'Approved' %}bg-success{% elif chapter.status == 'Generated' %}bg-warning{% else %}bg-secondary{% endif %}">
+                    {{ chapter.status }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-8">
+        <h4>Chapter {{ current_chapter_index + 1 }}: {{ current_chapter.title }}</h4>
+
+        <form action="{{ url_for('fiction.save_chapter', project_id=project.id, chapter_index=current_chapter_index) }}" method="POST">
+            <div class="form-group">
+                <textarea name="chapter_text" class="form-control" rows="20">{{ current_chapter.text }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Approve and Generate Images</button>
+        </form>
+
+        <form action="{{ url_for('fiction.generate_chapter', project_id=project.id, chapter_index=current_chapter_index) }}" method="POST" class="mt-2">
+            <button type="submit" class="btn btn-primary">Generate Chapter Text</button>
+        </form>
+
+        <hr>
+
+        <h5>Generated Images</h5>
+        <div class="row">
+            {% for image in current_chapter.images %}
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="{{ image.url }}" class="card-img-top" alt="{{ image.prompt }}">
+                    <div class="card-body">
+                        <p class="card-text"><small>{{ image.prompt }}</small></p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p>No images generated for this chapter yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('fiction.finalize', project_id=project.id) }}" class="btn btn-info">Finalize Book</a>
+</div>
+
+{% endblock %}

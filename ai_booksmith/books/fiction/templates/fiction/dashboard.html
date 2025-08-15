@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Fiction Dashboard - AI Booksmith{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h2>Fiction Dashboard</h2>
+    <p class="lead">Your central hub for creating and managing fiction book projects.</p>
+    <a href="{{ url_for('fiction.new_project_form') }}" class="btn btn-primary mt-2">Start a New Fiction Book</a>
+</div>
+
+<hr class="my-4">
+
+<h3>Your Projects</h3>
+<div class="list-group">
+    {# In a real application, you would loop through the user's projects here #}
+    <a href="#" class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">The Galactic Chronicles</h5>
+            <small>Last updated: 3 days ago</small>
+        </div>
+        <p class="mb-1">A science fiction epic spanning galaxies and generations.</p>
+        <small>Status: Writing in Progress</small>
+    </a>
+    <a href="#" class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">Mystery on the Nile</h5>
+            <small>Last updated: 1 week ago</small>
+        </div>
+        <p class="mb-1">A thrilling mystery set in 1920s Egypt.</p>
+        <small>Status: Completed</small>
+    </a>
+</div>
+{% endblock %}

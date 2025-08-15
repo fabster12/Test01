@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}New Fiction Project - AI Booksmith{% endblock %}
+
+{% block content %}
+<h2>New Fiction Project</h2>
+<p>Let's brainstorm some ideas for your next book. Fill out the form below to get started.</p>
+
+<form action="{{ url_for('fiction.generate_ideas') }}" method="POST">
+    <div class="form-group">
+        <label for="genre">Genre</label>
+        <input type="text" id="genre" name="genre" class="form-control" value="{{ theme_data.title if theme_data else 'Science Fiction' }}" required>
+    </div>
+    <div class="form-group">
+        <label for="description">Brief Description or Theme</label>
+        <textarea id="description" name="description" class="form-control" rows="3" required>{{ theme_data.description if theme_data else 'A generation ship, a long journey, a mystery.' }}</textarea>
+    </div>
+    <div class="form-group">
+        <label for="word_count">Target Word Count</label>
+        <select id="word_count" name="word_count" class="form-control">
+            <option value="20000">Novella (20,000 words)</option>
+            <option value="50000" selected>Short Novel (50,000 words)</option>
+            <option value="80000">Standard Novel (80,000 words)</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="language">Language</label>
+        <input type="text" id="language" name="language" class="form-control" value="English" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Generate Ideas</button>
+</form>
+{% endblock %}

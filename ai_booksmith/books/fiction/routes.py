@@ -8,7 +8,10 @@ import zipfile
 import requests
 import pypandoc
 from flask import Blueprint, render_template, request, redirect, url_for, session, abort, send_file, current_app
-from ..mock_provider import mock_openai_chat_completion, mock_leonardo_image_generation
+from ai_booksmith.mock_provider import mock_openai_chat_completion, mock_leonardo_image_generation
+from ai_booksmith.config_manager import get_config, get_model_config
+from ai_booksmith.llm_provider import get_llm_client
+from ai_booksmith.image_gen_provider import get_image_gen_client
 
 fiction_bp = Blueprint('fiction', __name__, template_folder='templates', url_prefix='/fiction')
 
@@ -26,32 +29,33 @@ def save_project(project_data):
 def parse_chapters_from_synopsis(synopsis):
     return re.findall(r'#+\s*Chapter\s*\d+[:\s]*(.*)', synopsis)
 
-def get_active_model_details(config, provider_key, active_model_key):
-    models_config = config.get('models', {})
-    active_model_name = config.get(active_model_key)
-    return models_config.get(provider_key, {}).get(active_model_name, {})
-
 def generate_images_for_chapter(project, chapter_index):
-    config = current_app.config['APP_CONFIG']
-    client = current_app.openai_client
+    config = get_config()
+    model_config = get_model_config()
+    llm_client = get_llm_client()
+    image_gen_client = get_image_gen_client()
+
     chapter_text = project['chapters'][chapter_index]['text']
     art_style = project['art_style']
     is_bw = project.get('final_settings', {}).get('interior_color') == 'bw'
     scene_prompt = f'Read the following chapter. Identify 3 visually interesting scenes to illustrate. Return a JSON object: {{"scenes": ["scene1", "scene2", "scene3"]}}'
 
+    active_openai_model_name = config.get('active_openai_model')
+    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":scene_prompt}])
         else:
-            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
-            response = client.chat.completions.create(model=active_model.get('name', 'gpt-3.5-turbo'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": scene_prompt + f"---{chapter_text[:4000]}---"}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": scene_prompt + f"---{chapter_text[:4000]}---"}], response_format={"type": "json_object"})
         scenes = json.loads(response.choices[0].message.content).get('scenes', [])
     except Exception as e:
         print(f"Error generating image prompts: {e}")
         scenes = []
 
     generated_images = []
-    ssl_verify = config.get('ssl_cert_file') or True
+    active_leonardo_model_name = config.get('active_leonardo_model')
+    leonardo_model_id = next((m['id'] for m in model_config['leonardo'] if m['name'] == active_leonardo_model_name), None)
 
     for scene_desc in scenes:
         try:
@@ -60,40 +64,38 @@ def generate_images_for_chapter(project, chapter_index):
                 image_url = mock_response['generations_by_pk']['generated_images'][0]['url']
                 generated_images.append({"prompt": scene_desc, "url": image_url})
             else:
-                active_leo_model = get_active_model_details(config, 'leonardo_models', 'active_leonardo_model')
-                headers = {"authorization": f"Bearer {config['leonardo']['api_key']}"}
                 bw_prompt = "black and white, grayscale, " if is_bw else ""
-                payload = {"prompt": f"{scene_desc}, {bw_prompt}in the style of {art_style}", "modelId": active_leo_model.get('id')}
-                response = requests.post(f"https://cloud.leonardo.ai/api/rest/v1/generations", json=payload, headers=headers, verify=ssl_verify)
-                response.raise_for_status()
-                generation_id = response.json()['sdGenerationJob']['generationId']
-                for _ in range(10):
-                    time.sleep(6)
-                    get_response = requests.get(f"https://cloud.leonardo.ai/api/rest/v1/generations/{generation_id}", headers=headers, verify=ssl_verify)
-                    get_response.raise_for_status()
-                    job_status = get_response.json()['generations_by_pk']['status']
-                    if job_status == 'COMPLETE':
-                        image_urls = get_response.json()['generations_by_pk']['generated_images']
-                        if image_urls: generated_images.append({"prompt": scene_desc, "url": image_urls[0]['url']})
-                        break
+                image_prompt = f"{scene_desc}, {bw_prompt}in the style of {art_style}"
+                generation_id = image_gen_client.generate(image_prompt, model_id=leonardo_model_id)
+                image_url = image_gen_client.poll_for_image(generation_id)
+                if image_url:
+                    generated_images.append({"prompt": scene_desc, "url": image_url})
         except Exception as e: print(f"Error generating image: {e}")
     project['chapters'][chapter_index]['images'] = generated_images
     save_project(project)
 
 def generate_kdp_metadata(project):
-    config = current_app.config['APP_CONFIG']
-    client = current_app.openai_client
+    config = get_config()
+    model_config = get_model_config()
+    llm_client = get_llm_client()
     language = project.get('language', 'English')
-    prompt = f"You are a book marketing expert..."
+    prompt = f"You are a book marketing expert for Amazon KDP. For a book with title '{project['title']}' and description '{project.get('final_settings',{}).get('description', project['logline'])}', generate KDP metadata. Provide JSON with keys: 'keywords' (a list of 7 relevant strings) and 'categories' (a list of 2 relevant strings from the official KDP category list). Provide keywords in {language}."
+
+    active_openai_model_name = config.get('active_openai_model')
+    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
-            response = client.chat.completions.create(model=active_model.get('name'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
         metadata = json.loads(response.choices[0].message.content)
-        return f"Keywords:..."
+        return f"Keywords:\n- " + "\n- ".join(metadata.get('keywords', [])) + "\n\nCategories:\n- " + "\n- ".join(metadata.get('categories', []))
     except Exception as e: return f"Error generating metadata: {e}"
+
+@fiction_bp.route('/')
+def fiction_dashboard():
+    return render_template('fiction/dashboard.html')
 
 @fiction_bp.route('/new')
 def new_project_form():
@@ -102,16 +104,20 @@ def new_project_form():
 
 @fiction_bp.route('/generate_ideas', methods=['POST'])
 def generate_ideas():
-    config = current_app.config['APP_CONFIG']
-    client = current_app.openai_client
+    config = get_config()
+    model_config = get_model_config()
+    llm_client = get_llm_client()
     form_data = request.form.to_dict()
-    prompt = f'...'
+    prompt = f'You are a creative assistant. Based on Genre: "{form_data["genre"]}" and Description: "{form_data["description"]}", generate 10 book ideas. Target word count is {form_data["word_count"]}. For each, provide: "title", "logline", "writing_style", "art_style". Return as JSON. Write all text in {form_data["language"]}.'
+
+    active_openai_model_name = config.get('active_openai_model')
+    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
-            response = client.chat.completions.create(model=active_model.get('name'), messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
         ideas = json.loads(response.choices[0].message.content).get('ideas', [])
     except Exception as e: ideas = []
     session['ideas'] = ideas
@@ -134,18 +140,22 @@ def blueprint(project_id):
 
 @fiction_bp.route('/<project_id>/generate_blueprint', methods=['POST'])
 def generate_blueprint(project_id):
-    config = current_app.config['APP_CONFIG']
-    client = current_app.openai_client
+    config = get_config()
+    model_config = get_model_config()
+    llm_client = get_llm_client()
     project = load_project(project_id)
     language = project.get('language', 'English')
     word_count = project.get('word_count', 20000)
-    prompt = f"..."
+    prompt = f"You are a master storyteller. For a {word_count}-word book titled '{project['title']}', generate a detailed, multi-chapter synopsis and a compelling back cover blurb. Return as JSON with keys 'synopsis' and 'back_cover_blurb'. Write all text content in {language}."
+
+    active_openai_model_name = config.get('active_openai_model')
+    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
-            response = client.chat.completions.create(model=active_model.get('name'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
         data = json.loads(response.choices[0].message.content)
         project['synopsis'], project['back_cover_blurb'] = data.get('synopsis', 'Error.'), data.get('back_cover_blurb', 'Error.')
     except Exception as e:
@@ -165,18 +175,47 @@ def writing_room(project_id):
 
 @fiction_bp.route('/<project_id>/generate_chapter/<int:chapter_index>', methods=['POST'])
 def generate_chapter(project_id, chapter_index):
-    # ... (full implementation with new model logic)
-    pass
+    config = get_config()
+    model_config = get_model_config()
+    llm_client = get_llm_client()
+    project = load_project(project_id)
+    language = project.get('language', 'English')
+    num_chapters = len(project['chapters'])
+    words_per_chapter = int(project.get('word_count', 20000)) / num_chapters if num_chapters > 0 else 2000
+    previous_chapters_text = "\\n\\n".join([ch['text'] for i, ch in enumerate(project['chapters']) if i < chapter_index and ch['status'] == 'Approved'])
+    context_summary = f"Summary of previous chapters:\\n{previous_chapters_text[:5000]}..." if previous_chapters_text else "This is the first chapter."
+    prompt = f"You are a novelist. Write the full text for Chapter {chapter_index + 1}: {project['chapters'][chapter_index]['title']}. Chapter should be ~{words_per_chapter:.0f} words. Write in {language}. Context: {context_summary}."
+
+    active_openai_model_name = config.get('active_openai_model')
+    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+
+    try:
+        if config['provider'] == 'mock':
+            response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
+        else:
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "user", "content": prompt}])
+        project['chapters'][chapter_index]['text'] = response.choices[0].message.content
+        project['chapters'][chapter_index]['status'] = 'Generated'
+        save_project(project)
+    except Exception as e: print(f"Error generating chapter: {e}")
+    return redirect(url_for('.writing_room', project_id=project_id, chapter_index=chapter_index))
 
 @fiction_bp.route('/<project_id>/save_chapter/<int:chapter_index>', methods=['POST'])
 def save_chapter(project_id, chapter_index):
-    # ... (full implementation)
-    pass
+    project = load_project(project_id)
+    project['chapters'][chapter_index]['text'] = request.form.get('chapter_text')
+    project['chapters'][chapter_index]['status'] = 'Approved'
+    save_project(project)
+    generate_images_for_chapter(project, chapter_index)
+    next_chapter_index = chapter_index + 1
+    if next_chapter_index >= len(project['chapters']):
+        return redirect(url_for('.finalize', project_id=project_id))
+    return redirect(url_for('.writing_room', project_id=project_id, chapter_index=next_chapter_index))
 
 @fiction_bp.route('/<project_id>/auto_approve_all', methods=['POST'])
 def auto_approve_all(project_id):
-    # ... (full implementation with new model logic)
-    pass
+    # This would be a background task in a real app
+    return redirect(url_for('.writing_room', project_id=project_id))
 
 @fiction_bp.route('/<project_id>/finalize')
 def finalize(project_id):
@@ -184,5 +223,40 @@ def finalize(project_id):
 
 @fiction_bp.route('/<project_id>/build_package', methods=['POST'])
 def build_package(project_id):
-    # ... (full implementation)
-    pass
+    project = load_project(project_id)
+    settings = request.form.to_dict()
+    project['final_settings'] = settings
+    save_project(project)
+
+    author = settings.get('author_name', 'A.I. Author')
+    title = project.get('title', 'Untitled Book')
+
+    markdown_content = f"---\ntitle: {title}\nauthor: {author}\n---\n\n"
+    for i, chapter in enumerate(project['chapters']):
+        markdown_content += f"# Chapter {i+1}: {chapter['title']}\n\n"
+        markdown_content += chapter['text'] + "\n\n"
+        for image in chapter.get('images', []):
+            markdown_content += f"![{image['prompt']}]({image['url']})\n\n"
+
+    try:
+        width_mm = settings.get('trim_width_mm', '152')
+        height_mm = settings.get('trim_height_mm', '229')
+        extra_args = ['-V', f'geometry:paperwidth={width_mm}mm', '-V', f'geometry:paperheight={height_mm}mm', '-V', 'geometry:margin=1in']
+        output_pdf = pypandoc.convert_text(markdown_content, 'pdf', format='md', extra_args=extra_args)
+    except Exception as e:
+        print(f"Error generating PDF with Pandoc: {e}")
+        output_pdf = markdown_content.encode('utf-8')
+        return send_file(io.BytesIO(output_pdf), as_attachment=_True, download_name='book_content.md', mimetype='text/markdown')
+
+    cover_md = f"---\ntitle: {title}\nauthor: {author}\n---\n"
+    cover_pdf = pypandoc.convert_text(cover_md, 'pdf', format='md', extra_args=extra_args)
+    metadata_text = generate_kdp_metadata(project)
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.writestr(f'{title}_manuscript.pdf', output_pdf)
+        zip_file.writestr(f'{title}_cover.pdf', cover_pdf)
+        zip_file.writestr('kdp_metadata.txt', metadata_text)
+
+    zip_buffer.seek(0)
+    return send_file(zip_buffer, as_attachment=True, download_name=f'book_package_{title}.zip', mimetype='application/zip')

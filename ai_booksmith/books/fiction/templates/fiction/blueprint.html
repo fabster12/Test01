@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Book Blueprint - AI Booksmith{% endblock %}
+
+{% block content %}
+<h2>Book Blueprint: {{ project.title }}</h2>
+<p>Here you can generate and refine the high-level structure of your book.</p>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Synopsis</h5>
+        {% if project.synopsis %}
+        <p>{{ project.synopsis | nl2br }}</p>
+        {% else %}
+        <p>No synopsis generated yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h5 class="card-title">Back Cover Blurb</h5>
+        {% if project.back_cover_blurb %}
+        <p>{{ project.back_cover_blurb }}</p>
+        {% else %}
+        <p>No blurb generated yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <form action="{{ url_for('fiction.generate_blueprint', project_id=project.id) }}" method="POST">
+        <button type="submit" class="btn btn-primary">Generate Synopsis & Blurb</button>
+    </form>
+    <a href="{{ url_for('fiction.writing_room', project_id=project.id) }}" class="btn btn-success">Proceed to Writing Room</a>
+</div>
+{% endblock %}

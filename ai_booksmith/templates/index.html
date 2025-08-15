@@ -1,44 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Choose Book Type - AI Booksmith{% endblock %}
+{% block title %}Welcome to AI Booksmith{% endblock %}
 
 {% block content %}
-<div class="text-center mb-5">
-    <h3>Step 1: Choose Your Book Type</h3>
-    <p class="text-muted">Select the type of book you would like to create.</p>
+<div class="text-center">
+    <h2>Welcome to AI Booksmith!</h2>
+    <p class="lead">Your one-stop solution for generating entire books with the power of AI.</p>
+    <p>Select a book type from the navigation menu to begin your creation journey.</p>
 </div>
 
-<div class="row justify-content-center">
-    <!-- Fiction Book (Active) -->
-    <div class="col-md-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">📚 Fiction Book</h5>
-                <p class="card-text">Create a novel or novella with a complete story arc, chapters, and illustrations.</p>
-                <a href="{{ url_for('brainstorm', book_type='fiction') }}" class="btn btn-primary">Start Brainstorming</a>
-            </div>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <h3>Fiction Books</h3>
+            <p>Craft compelling narratives, from short stories to full-length novels. Our AI will help you with plot, characters, and dialogue.</p>
+            <a href="{{ url_for('fiction.fiction_dashboard') }}" class="btn btn-primary">Go to Fiction Dashboard</a>
         </div>
     </div>
-
-    <!-- Coloring Book (Active) -->
-    <div class="col-md-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">🎨 Coloring Book</h5>
-                <p class="card-text">Generate a personalized coloring book from a theme with dozens of unique pages.</p>
-                <a href="{{ url_for('brainstorm', book_type='low_content') }}" class="btn btn-primary">Start Brainstorming</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Travel Guide (Mockup) -->
-    <div class="col-md-4">
-        <div class="card text-center bg-light">
-            <div class="card-body">
-                <h5 class="card-title">🌍 Travel Guide</h5>
-                <p class="card-text">Create a guide for a country or city with facts, itineraries, and images. (Coming Soon)</p>
-                <button class="btn btn-secondary" disabled>Start Writing</button>
-            </div>
+    <div class="col-md-6">
+        <div class="card">
+            <h3>Coloring Books</h3>
+            <p>Generate unique, ready-to-print coloring books on any theme. Perfect for KDP low-content publishing.</p>
+            <a href="{{ url_for('low_content.coloring_book_generator') }}" class="btn btn-primary">Create a Coloring Book</a>
         </div>
     </div>
 </div>

@@ -1,0 +1,25 @@
+openai:
+  - name: "GPT-4o"
+    id: "gpt-4o"
+    cost_per_million_tokens: 10.00
+  - name: "GPT-4o Mini"
+    id: "gpt-4o-mini"
+    cost_per_million_tokens: 0.60
+  - name: "GPT-4 Turbo"
+    id: "gpt-4-turbo"
+    cost_per_million_tokens: 30.00
+  - name: "GPT-3.5 Turbo"
+    id: "gpt-3.5-turbo"
+    cost_per_million_tokens: 1.50
+
+leonardo:
+  - name: "Leonardo Diffusion XL"
+    id: "b7aa9931-a3e3-433e-b7a1-34358514a362"
+  - name: "SDXL 1.0"
+    id: "a45e7da2-b44f-6e45-3d0a-dece5d83d6ec"
+  - name: "AlbedoBase XL"
+    id: "043435de-ab26-4d66-9e97-13e5e54a3399"
+  - name: "DreamShaper v7"
+    id: "4f76bdf2-f227-4009-a5c7-1c6628b0d453"
+  - name: "Absolute Reality v1.6"
+    id: "a68a36c8-1323-4416-8608-a83e383561a3"
