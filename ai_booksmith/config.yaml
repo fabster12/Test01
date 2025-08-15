@@ -1,0 +1,16 @@
+# AI Booksmith Configuration
+# Copy this file to config.yaml and fill in your details.
+# This file is ignored by git.
+
+# API Provider Settings
+# provider: "live" # Use the real APIs (requires keys below)
+provider: "mock" # Use the mockup provider for testing without API costs
+
+openai:
+  api_key: "sk-your-openai-api-key-here"
+
+leonardo:
+  api_key: "your-leonardo-api-key-here"
+
+flask:
+  secret_key: "a-very-strong-and-random-secret-key-for-sessions"
