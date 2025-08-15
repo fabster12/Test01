@@ -23,10 +23,10 @@
                     <div class="p-3 bg-light rounded mb-4" style="white-space: pre-wrap;">{{ project.back_cover_blurb }}</div>
 
                     <div class="d-flex justify-content-between">
-                        <form action="{{ url_for('generate_blueprint', project_id=project.id) }}" method="post">
+                        <form action="{{ url_for('fiction.generate_blueprint', project_id=project.id) }}" method="post">
                             <button type="submit" class="btn btn-warning">Try Again</button>
                         </form>
-                        <form action="{{ url_for('writing_room', project_id=project.id) }}" method="get">
+                        <form action="{{ url_for('fiction.writing_room', project_id=project.id) }}" method="get">
                              <button type="submit" class="btn btn-success">Approve and Continue to Writing Room</button>
                         </form>
                     </div>
@@ -34,7 +34,7 @@
                 {% else %}
                     <!-- Show button to generate if they don't exist -->
                     <p>Now, let's generate the detailed plot of your story and the text for the back cover.</p>
-                    <form action="{{ url_for('generate_blueprint', project_id=project.id) }}" method="post">
+                    <form action="{{ url_for('fiction.generate_blueprint', project_id=project.id) }}" method="post">
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">Generate Synopsis & Blurb</button>
                         </div>

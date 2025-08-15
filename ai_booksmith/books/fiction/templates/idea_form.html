@@ -10,7 +10,7 @@
                 <h3 class="card-title text-center">Step 2: Describe Your Idea</h3>
                 <p class="card-text text-center text-muted">Provide a genre, a description, and a language for your new fiction book.</p>
 
-                <form action="{{ url_for('generate_ideas', book_type=book_type) }}" method="post" class="mt-4">
+                <form action="{{ url_for('fiction.generate_ideas') }}" method="post" class="mt-4">
                     <div class="mb-3">
                         <label for="language" class="form-label">Book Language</label>
                         <select class="form-select" id="language" name="language" required>
@@ -21,11 +21,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="genre" class="form-label">Genre</label>
-                        <input type="text" class="form-control" id="genre" name="genre" value="{{ theme.title or '' }}" required>
+                        <input type="text" class="form-control" id="genre" name="genre" value="{{ theme_data.get('title', '') }}" placeholder="e.g., Science Fiction, Cozy Mystery, Fantasy Adventure" required>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">Brief Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ theme.description or '' }}</textarea>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="e.g., 'A story about a lost robot trying to find its way home in a futuristic city.' or 'A detective solves a murder in a quiet English village during winter.'" required>{{ theme_data.get('description', '') }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label for="word_count" class="form-label">Target Word Count</label>
