@@ -1,7 +1,7 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, g
 from .books.fiction.routes import fiction_bp
 from .books.low_content.routes import low_content_bp
-from .config_manager import init_config, get_config, get_model_config
+from .config_manager import load_config, get_config, get_model_config
 from .llm_provider import init_llm_client
 from .image_gen_provider import init_image_gen_client
 import os
@@ -9,25 +9,25 @@ import os
 def create_app():
     app = Flask(__name__)
 
-    # Initialize configuration
-    init_config(app)
-    config = get_config()
-
-    app.secret_key = config.get('flask_secret_key', 'a_default_secret_key')
-
-    # Ensure the generated_books directory exists
-    generated_books_dir = config.get('generated_books_dir', 'generated_books')
-    if not os.path.isabs(generated_books_dir):
-        generated_books_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), generated_books_dir)
-
-    if not os.path.exists(generated_books_dir):
-        os.makedirs(generated_books_dir)
-
-    # Update the config with the absolute path
-    config['generated_books_dir'] = generated_books_dir
-
-    # Initialize API clients and store them in the app context
     with app.app_context():
+        # Load configuration
+        g.config = load_config()
+        config = get_config()
+
+        app.secret_key = config.get('flask_secret_key', 'a_default_secret_key')
+
+        # Ensure the generated_books directory exists
+        generated_books_dir = config.get('generated_books_dir', 'generated_books')
+        if not os.path.isabs(generated_books_dir):
+            generated_books_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), generated_books_dir)
+
+        if not os.path.exists(generated_books_dir):
+            os.makedirs(generated_books_dir)
+
+        # Update the config with the absolute path
+        config['generated_books_dir'] = generated_books_dir
+
+        # Initialize API clients and store them in the app context
         init_llm_client()
         init_image_gen_client()
 

@@ -1,0 +1,6 @@
+# IDE specific files
+.idea/
+*.iml
+
+# Certificate files
+ai_booksmith/static/CERTIFICATE.crt
