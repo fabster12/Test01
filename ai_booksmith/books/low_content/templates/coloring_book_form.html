@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}New Coloring Book - AI Booksmith{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center">New Coloring Book</h3>
+                <p class="card-text text-center text-muted">Provide a theme and a number of pages. The AI will generate a unique coloring book for you.</p>
+
+                <form action="{{ url_for('low_content.generate_coloring_book') }}" method="post" class="mt-4">
+                    <div class="mb-3">
+                        <label for="theme" class="form-label">Coloring Book Theme</label>
+                        <input type="text" class="form-control" id="theme" name="theme" value="{{ theme.title or '' }}" placeholder="e.g., Fantasy Creatures, Steampunk Inventions" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pages" class="form-label">Number of Pages (Images)</label>
+                        <input type="number" class="form-control" id="pages" name="pages" value="20" min="5" max="100" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Generate Coloring Book</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

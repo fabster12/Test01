@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Coloring Book</title>
+    <style>
+        @page {
+            size: 8.5in 11in; /* Standard letter size for coloring books */
+            margin: 0.5in;
+        }
+        .page {
+            page-break-after: always;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            border: 1px solid #ccc; /* Optional border for alignment */
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    {% for image_url in images %}
+        <div class="page">
+            <img src="{{ image_url }}" alt="Coloring Page">
+        </div>
+    {% endfor %}
+</body>
+</html>

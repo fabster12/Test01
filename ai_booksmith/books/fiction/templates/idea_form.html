@@ -21,11 +21,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="genre" class="form-label">Genre</label>
-                        <input type="text" class="form-control" id="genre" name="genre" placeholder="e.g., Science Fiction, Cozy Mystery, Fantasy Adventure" required>
+                        <input type="text" class="form-control" id="genre" name="genre" value="{{ theme.title or '' }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">Brief Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="e.g., 'A story about a lost robot trying to find its way home in a futuristic city.' or 'A detective solves a murder in a quiet English village during winter.'" required></textarea>
+                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ theme.description or '' }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label for="word_count" class="form-label">Target Word Count</label>
