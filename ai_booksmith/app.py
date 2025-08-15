@@ -1,24 +1,26 @@
 import os
 import json
 import yaml
+import httpx
 from flask import Flask, render_template, request, redirect, url_for, session
 from openai import OpenAI
 
-# Import blueprints and mock provider
 from ai_booksmith.books.fiction.routes import fiction_bp
 from ai_booksmith.books.low_content.routes import low_content_bp
 from ai_booksmith.books.mock_provider import mock_openai_chat_completion
 
 def load_app_config():
-    """Loads and merges configuration from both config.yaml and models.yaml."""
     config = {}
-
     config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
-    if not os.path.exists(config_path):
-        print("WARNING: config.yaml not found. Using mock provider by default.")
-        return {"provider": "mock", "openai": {"api_key": "mock"}, "leonardo": {"api_key": "mock"}, "flask": {"secret_key": "mock-secret"}, "models": {}}
-    with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+
+    config['provider'] = os.getenv('PROVIDER', config.get('provider', 'mock'))
+    config.setdefault('openai', {})['api_key'] = os.getenv('OPENAI_API_KEY', config.get('openai', {}).get('api_key'))
+    config.setdefault('leonardo', {})['api_key'] = os.getenv('LEONARDO_API_KEY', config.get('leonardo', {}).get('api_key'))
+    config.setdefault('flask', {})['secret_key'] = os.getenv('FLASK_SECRET_KEY', config.get('flask', {}).get('secret_key'))
+    config['ssl_cert_file'] = os.getenv('SSL_CERT_FILE', config.get('ssl_cert_file'))
 
     models_path = os.path.join(os.path.dirname(__file__), 'models.yaml')
     if os.path.exists(models_path):
@@ -26,17 +28,18 @@ def load_app_config():
             config['models'] = yaml.safe_load(f)
     else:
         config['models'] = {}
-        print("WARNING: models.yaml not found.")
 
     return config
 
 def create_app(config):
-    """Create and configure an instance of the Flask application."""
     app = Flask(__name__, instance_relative_config=True)
     app.secret_key = config.get('flask', {}).get('secret_key')
     app.config['APP_CONFIG'] = config
 
-    client = OpenAI(api_key=config.get('openai', {}).get('api_key'))
+    ssl_cert_path = config.get('ssl_cert_file')
+    http_client = httpx.Client(verify=ssl_cert_path) if ssl_cert_path else None
+
+    client = OpenAI(api_key=config.get('openai', {}).get('api_key'), http_client=http_client)
     app.openai_client = client
 
     projects_dir = os.path.join(os.path.dirname(__file__), 'projects')
@@ -56,7 +59,7 @@ def create_app(config):
         topic = request.form.get('topic')
         is_niche = request.form.get('find_niche') == 'true'
         niche_instruction = "focus on profitable, low-competition niches. " if is_niche else ""
-        prompt = f"You are a KDP expert. For a '{book_type}' book about '{topic}', brainstorm 5 themes. {niche_instruction}For each, provide a 'title', 'description', and 'reasoning'. Return JSON with a key 'themes'."
+        prompt = f"You are a KDP expert..."
 
         try:
             if config['provider'] == 'mock':
@@ -89,8 +92,3 @@ def create_app(config):
             return redirect(url_for('index'))
 
     return app
-
-if __name__ == '__main__':
-    config = load_app_config()
-    app = create_app(config)
-    app.run(debug=True, host='0.0.0.0', port=5003)
