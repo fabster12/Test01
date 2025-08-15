@@ -22,7 +22,7 @@
                 <div class="mt-auto">
                     <form action="{{ url_for('select_theme') }}" method="post">
                         <input type="hidden" name="book_type" value="{{ book_type }}">
-                        <input type="hidden" name="selected_theme_json" value="{{ theme | tojson | safe }}">
+                        <input type="hidden" name="selected_theme_index" value="{{ loop.index0 }}">
                         <div class="d-grid">
                             <button type="submit" class="btn btn-success">Select this Theme</button>
                         </div>

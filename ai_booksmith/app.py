@@ -5,9 +5,9 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from openai import OpenAI
 
 # Import blueprints and mock provider
-from books.fiction.routes import fiction_bp
-from books.low_content.routes import low_content_bp
-from books.mock_provider import mock_openai_chat_completion
+from ai_booksmith.books.fiction.routes import fiction_bp
+from ai_booksmith.books.low_content.routes import low_content_bp
+from ai_booksmith.books.mock_provider import mock_openai_chat_completion
 
 def load_config():
     """Loads the YAML configuration file."""
@@ -69,8 +69,17 @@ def create_app(config):
 
     @app.route('/select_theme', methods=['POST'])
     def select_theme():
+        """Handles theme selection and redirects to the correct blueprint."""
         book_type = request.form.get('book_type')
-        session['selected_theme'] = json.loads(request.form.get('selected_theme_json'))
+        theme_index = int(request.form.get('selected_theme_index', 0))
+
+        themes = session.get('brainstorm_results', [])
+
+        if theme_index >= len(themes):
+            return "Error: Invalid theme selected.", 400
+
+        session['selected_theme'] = themes[theme_index]
+
         if book_type == 'fiction':
             return redirect(url_for('fiction.new_project_form'))
         elif book_type == 'low_content':
