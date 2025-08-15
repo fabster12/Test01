@@ -34,6 +34,8 @@ def create_app():
     # Register the blueprints for different book types
     app.register_blueprint(fiction_bp)
     app.register_blueprint(low_content_bp)
+    from .books.garden_planner.routes import garden_planner_bp
+    app.register_blueprint(garden_planner_bp)
 
     # Main application routes
     @app.route('/')

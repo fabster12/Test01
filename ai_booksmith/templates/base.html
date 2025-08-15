@@ -14,6 +14,7 @@
                 <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Home</a></li>
                 <li><a href="{{ url_for('fiction.fiction_dashboard') }}" class="{{ 'active' if 'fiction' in request.endpoint else '' }}">Fiction Books</a></li>
                 <li><a href="{{ url_for('low_content.coloring_book_generator') }}" class="{{ 'active' if 'low_content' in request.endpoint else '' }}">Coloring Books</a></li>
+                <li><a href="{{ url_for('garden_planner.index') }}" class="{{ 'active' if 'garden_planner' in request.endpoint else '' }}">Garden Planner</a></li>
                 <li><a href="{{ url_for('system_info') }}" class="{{ 'active' if request.endpoint == 'system_info' else '' }}">System</a></li>
             </ul>
         </nav>

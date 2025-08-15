@@ -1,0 +1,7 @@
+Flask
+openai
+requests
+WeasyPrint
+python-dotenv
+pypandoc
+PyYAML

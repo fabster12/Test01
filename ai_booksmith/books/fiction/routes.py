@@ -100,7 +100,7 @@ def fiction_dashboard():
 @fiction_bp.route('/new')
 def new_project_form():
     theme_data = session.get('selected_theme', {})
-    return render_template('idea_form.html', theme_data=theme_data)
+    return render_template('fiction/idea_form.html', theme_data=theme_data)
 
 @fiction_bp.route('/generate_ideas', methods=['POST'])
 def generate_ideas():

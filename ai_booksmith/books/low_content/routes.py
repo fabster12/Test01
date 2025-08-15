@@ -6,7 +6,7 @@ import os
 import uuid
 import json
 import requests
-from ...book_generator import create_coloring_book_pdf
+from ... import book_generator
 
 low_content_bp = Blueprint('low_content', __name__,
                            template_folder='templates',

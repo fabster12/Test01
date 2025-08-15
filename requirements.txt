@@ -1,2 +1,5 @@
-requests
-beautifulsoup4
+Flask>=2.0
+openai>=1.0
+requests>=2.20
+PyYAML>=5.0
+pypandoc>=1.11
