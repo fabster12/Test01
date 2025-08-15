@@ -2,15 +2,22 @@
 # Copy this file to config.yaml and fill in your details.
 # This file is ignored by git.
 
-# API Provider Settings
+# --- Provider Settings ---
 # provider: "live" # Use the real APIs (requires keys below)
 provider: "mock" # Use the mockup provider for testing without API costs
 
+# --- Active Models ---
+# Set the key of the model you want to use from models.yaml
+active_openai_model: "gpt-4o-mini"
+active_leonardo_model: "flux_schnell"
+
+# --- API Keys ---
 openai:
   api_key: "sk-your-openai-api-key-here"
 
 leonardo:
   api_key: "your-leonardo-api-key-here"
 
+# --- Flask Settings ---
 flask:
   secret_key: "a-very-strong-and-random-secret-key-for-sessions"

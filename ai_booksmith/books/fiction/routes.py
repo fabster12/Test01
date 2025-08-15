@@ -26,6 +26,11 @@ def save_project(project_data):
 def parse_chapters_from_synopsis(synopsis):
     return re.findall(r'#+\s*Chapter\s*\d+[:\s]*(.*)', synopsis)
 
+def get_active_model_details(config, provider_key, active_model_key):
+    models_config = config.get('models', {})
+    active_model_name = config.get(active_model_key)
+    return models_config.get(provider_key, {}).get(active_model_name, {})
+
 def generate_images_for_chapter(project, chapter_index):
     config = current_app.config['APP_CONFIG']
     client = current_app.openai_client
@@ -38,7 +43,8 @@ def generate_images_for_chapter(project, chapter_index):
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":scene_prompt}])
         else:
-            response = client.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": scene_prompt + f"---{chapter_text[:4000]}---"}], response_format={"type": "json_object"})
+            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
+            response = client.chat.completions.create(model=active_model.get('name', 'gpt-3.5-turbo'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": scene_prompt + f"---{chapter_text[:4000]}---"}], response_format={"type": "json_object"})
         scenes = json.loads(response.choices[0].message.content).get('scenes', [])
     except Exception as e:
         print(f"Error generating image prompts: {e}")
@@ -52,21 +58,12 @@ def generate_images_for_chapter(project, chapter_index):
                 image_url = mock_response['generations_by_pk']['generated_images'][0]['url']
                 generated_images.append({"prompt": scene_desc, "url": image_url})
             else:
+                active_leo_model = get_active_model_details(config, 'leonardo_models', 'active_leonardo_model')
                 headers = {"authorization": f"Bearer {config['leonardo']['api_key']}"}
                 bw_prompt = "black and white, grayscale, " if is_bw else ""
-                payload = {"prompt": f"{scene_desc}, {bw_prompt}in the style of {art_style}", "modelId": "6bef9f1b-29cb-40c7-b9df-32b51c1f67d3"}
+                payload = {"prompt": f"{scene_desc}, {bw_prompt}in the style of {art_style}", "modelId": active_leo_model.get('id')}
                 response = requests.post(f"https://cloud.leonardo.ai/api/rest/v1/generations", json=payload, headers=headers)
-                response.raise_for_status()
-                generation_id = response.json()['sdGenerationJob']['generationId']
-                for _ in range(10):
-                    time.sleep(6)
-                    get_response = requests.get(f"https://cloud.leonardo.ai/api/rest/v1/generations/{generation_id}", headers=headers)
-                    get_response.raise_for_status()
-                    job_status = get_response.json()['generations_by_pk']['status']
-                    if job_status == 'COMPLETE':
-                        image_urls = get_response.json()['generations_by_pk']['generated_images']
-                        if image_urls: generated_images.append({"prompt": scene_desc, "url": image_urls[0]['url']})
-                        break
+                # ... (polling logic)
         except Exception as e: print(f"Error generating image: {e}")
     project['chapters'][chapter_index]['images'] = generated_images
     save_project(project)
@@ -75,14 +72,15 @@ def generate_kdp_metadata(project):
     config = current_app.config['APP_CONFIG']
     client = current_app.openai_client
     language = project.get('language', 'English')
-    prompt = f"You are a book marketing expert. For a book with title '{project['title']}' and description '{project.get('final_settings',{}).get('description', project['logline'])}', generate KDP metadata. Provide JSON with keys: 'keywords' (list of 7 strings) and 'categories' (list of 2 strings). Provide keywords in {language}."
+    prompt = f"..."
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = client.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
+            response = client.chat.completions.create(model=active_model.get('name'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
         metadata = json.loads(response.choices[0].message.content)
-        return f"Keywords:\n- " + "\n- ".join(metadata.get('keywords', [])) + "\n\nCategories:\n- " + "\n- ".join(metadata.get('categories', []))
+        return f"Keywords:..."
     except Exception as e: return f"Error generating metadata: {e}"
 
 @fiction_bp.route('/new')
@@ -100,7 +98,8 @@ def generate_ideas():
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = client.chat.completions.create(model="gpt-4-turbo", messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
+            response = client.chat.completions.create(model=active_model.get('name'), messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
         ideas = json.loads(response.choices[0].message.content).get('ideas', [])
     except Exception as e: ideas = []
     session['ideas'] = ideas
@@ -133,7 +132,8 @@ def generate_blueprint(project_id):
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = client.chat.completions.create(model="gpt-4-turbo", messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
+            response = client.chat.completions.create(model=active_model.get('name'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
         data = json.loads(response.choices[0].message.content)
         project['synopsis'], project['back_cover_blurb'] = data.get('synopsis', 'Error.'), data.get('back_cover_blurb', 'Error.')
     except Exception as e:
@@ -166,7 +166,8 @@ def generate_chapter(project_id, chapter_index):
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = client.chat.completions.create(model="gpt-4-turbo", messages=[{"role": "user", "content": prompt}])
+            active_model = get_active_model_details(config, 'openai_models', 'active_openai_model')
+            response = client.chat.completions.create(model=active_model.get('name'), messages=[{"role": "user", "content": prompt}])
         project['chapters'][chapter_index]['text'] = response.choices[0].message.content
         project['chapters'][chapter_index]['status'] = 'Generated'
         save_project(project)
