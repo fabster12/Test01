@@ -5,9 +5,9 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from openai import OpenAI
 
 # Import blueprints and mock provider
-from ai_booksmith.books.fiction.routes import fiction_bp
-from ai_booksmith.books.low_content.routes import low_content_bp
-from ai_booksmith.books.mock_provider import mock_openai_chat_completion
+from books.fiction.routes import fiction_bp
+from books.low_content.routes import low_content_bp
+from books.mock_provider import mock_openai_chat_completion
 
 def load_config():
     """Loads the YAML configuration file."""
