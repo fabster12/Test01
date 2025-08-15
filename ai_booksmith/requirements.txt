@@ -1,5 +1,6 @@
 Flask
 openai
 requests
-WeasyPrint
 python-dotenv
+PyYAML
+pypandoc

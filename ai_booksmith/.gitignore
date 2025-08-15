@@ -1,0 +1,13 @@
+# Local configuration file
+config.yaml
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+.env
+venv/
+env/
