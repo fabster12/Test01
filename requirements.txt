@@ -4,3 +4,4 @@ requests>=2.20
 PyYAML>=5.0
 pypandoc>=1.11
 python-dotenv>=0.20
+Markdown>=3.3
