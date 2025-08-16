@@ -246,7 +246,7 @@ def build_package(project_id):
     except Exception as e:
         print(f"Error generating PDF with Pandoc: {e}")
         output_pdf = markdown_content.encode('utf-8')
-        return send_file(io.BytesIO(output_pdf), as_attachment=_True, download_name='book_content.md', mimetype='text/markdown')
+        return send_file(io.BytesIO(output_pdf), as_attachment=True, download_name='book_content.md', mimetype='text/markdown')
 
     cover_md = f"---\ntitle: {title}\nauthor: {author}\n---\n"
     cover_pdf = pypandoc.convert_text(cover_md, 'pdf', format='md', extra_args=extra_args)
