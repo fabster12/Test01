@@ -6,7 +6,7 @@ def generate_cover_image():
     Generates a cover image for the garden planner using Leonardo.
     """
     image_gen_client = get_image_gen_client()
-    prompt = "beautiful watercolor illustration of a lush garden with vegetables and flowers, book cover, award winning, professional"
+    prompt = "A beautiful watercolor illustration of a lush urban balcony garden teeming with bees, butterflies, and hummingbirds visiting colorful flowers. The style should be soft and inviting, suitable for a book cover. The title 'The Urban Pollinator Garden Planner' should be integrated gracefully into the design."
 
     try:
         generation_id = image_gen_client.generate(prompt)
@@ -16,91 +16,141 @@ def generate_cover_image():
         print(f"Error generating cover image: {e}")
         return None
 
-def generate_planner_content():
-    """
-    Generates the full content of the garden planner book in Markdown format.
-    """
-    content = []
-    content.append("# My Garden Planner")
-    content.append(generate_companion_planting_guide())
-    content.append(generate_garden_layout_pages())
-    content.append(generate_planting_calendar())
-    content.append(generate_plant_log_pages())
-    return "\n\n".join(content)
-
-def generate_companion_planting_guide():
-    """
-    Generates a companion planting guide using an LLM.
-    """
+def generate_introduction():
+    """Generates the introduction section as an HTML string."""
+    # Using an LLM to generate a friendly, niche-specific introduction
     llm_client = get_llm_client()
-    prompt = "Generate a concise companion planting guide for common vegetables. Include a brief explanation of what companion planting is. Format it as a markdown table."
-
+    prompt = "Write a brief, welcoming introduction for 'The Urban Pollinator Garden Planner'. Explain why pollinator-friendly gardens are important, especially in urban areas. Keep it to one or two short paragraphs."
     try:
         response = llm_client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a gardening expert."},
-                {"role": "user", "content": prompt}
-            ]
+            messages=[{"role": "user", "content": prompt}]
         )
-        return "## Companion Planting Guide\n\n" + response.choices[0].message.content
+        intro_text = response.choices[0].message.content.replace('\n', '<br>')
     except Exception as e:
-        # In a real app, you'd want more robust error handling and logging
-        print(f"Error generating companion planting guide: {e}")
-        return "## Companion Planting Guide\n\nCould not generate content at this time."
+        print(f"Error generating intro: {e}")
+        intro_text = "Welcome to your Urban Pollinator Garden Planner! Let's get started on creating a beautiful garden that helps our buzzing friends thrive."
 
-def generate_garden_layout_pages():
+    return f"""
+    <div class="page">
+        <h1>Introduction</h1>
+        <p>{intro_text}</p>
+        <h2>How to Use This Planner</h2>
+        <p>This planner is designed to help you create a thriving garden that supports bees, butterflies, and hummingbirds. Use the following sections to plan your year, track your plants, and observe the wonderful wildlife that visits your garden.</p>
+        <ul>
+            <li><strong>Yearly Overview:</strong> Plan your major goals for the year.</li>
+            <li><strong>Monthly Planners:</strong> Keep track of tasks, blooms, and pollinator visits each month.</li>
+            <li><strong>Garden Bed Planning:</strong> Sketch out your garden layouts.</li>
+            <li><strong>Plant Profiles:</strong> Keep detailed records of each plant.</li>
+            <li><strong>Notes & Resources:</strong> Extra space for your thoughts and helpful checklists.</li>
+        </ul>
+    </div>
     """
-    Generates markdown for grid-style garden layout pages.
-    """
-    layout_pages = "## Garden Layouts\n\n"
-    layout_pages += "Use the grids below to sketch out your garden plans.\n\n"
-    for i in range(4):  # Generate 4 layout pages
-        layout_pages += f"### Garden Layout Plan {i+1}\n\n"
-        # Create a simple markdown grid
-        header = "| " + " | ".join([" "] * 10) + " |"
-        separator = "|---" * 11 + "|"
-        row = "| " + " | ".join(["   "] * 10) + " |"
 
-        layout_pages += header + "\n"
-        layout_pages += separator + "\n"
-        for _ in range(15): # 15 rows in the grid
-            layout_pages += row + "\n"
-        layout_pages += "\n\n"
-    return layout_pages
+def generate_yearly_overview():
+    """Generates the yearly overview pages as an HTML string."""
+    return """
+    <div class="page">
+        <h1>Yearly Overview</h1>
+        <h2>Annual Planting Calendar</h2>
+        <p>Use this space to note your key planting dates for the year.</p>
+        <div class="notes-box" style="height: 300px;"></div>
+        <h2>Pollinator Activity Tracker</h2>
+        <p>Track the first and last sightings of your favorite pollinators.</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Pollinator</th>
+                    <th>First Sighting</th>
+                    <th>Last Sighting</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Bee</td><td></td><td></td><td></td></tr>
+                <tr><td>Butterfly</td><td></td><td></td><td></td></tr>
+                <tr><td>Hummingbird</td><td></td><td></td><td></td></tr>
+                <tr><td>Other</td><td></td><td></td><td></td></tr>
+            </tbody>
+        </table>
+    </div>
+    """
 
-def generate_planting_calendar():
-    """
-    Generates a generic, undated 12-month planting calendar section.
-    """
-    calendar = "## Planting Calendar\n\n"
-    calendar += "Use this calendar to track your planting schedule throughout the year.\n\n"
+def generate_monthly_planner_pages():
+    """Generates 12 monthly planner pages as an HTML string."""
+    html = ""
     months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     for month in months:
-        calendar += f"### {month}\n\n"
-        calendar += "**Seeds to Sow Indoors:**\n\n"
-        calendar += "- \n" * 3
-        calendar += "\n**Seeds to Sow Outdoors:**\n\n"
-        calendar += "- \n" * 3
-        calendar += "\n**Notes:**\n\n\n---\n\n"
-    return calendar
+        html += f"""
+        <div class="page">
+            <h1>{month}</h1>
+            <h2>Monthly To-Do List</h2>
+            <ul class="checklist">
+                <li><input type="checkbox"> Pruning</li>
+                <li><input type="checkbox"> Planting</li>
+                <li><input type="checkbox"> Fertilizing</li>
+                <li><input type="checkbox"> Watering</li>
+            </ul>
+            <h2>Bloom Calendar</h2>
+            <div class="notes-box" style="height: 150px;"></div>
+            <h2>Pollinator Observation Log</h2>
+            <p><em>Which flowers attracted the most pollinators this month?</em></p>
+            <div class="notes-box" style="height: 150px;"></div>
+        </div>
+        """
+    return html
 
-def generate_plant_log_pages():
+def generate_garden_bed_planning_pages():
+    """Generates garden bed planning grid pages as an HTML string."""
+    html = ""
+    for i in range(4): # 4 grid pages
+        html += f"""
+        <div class="page">
+            <h1>Garden Bed Plan {i+1}</h1>
+            <div class="grid-container">
+                {'<div class="grid-item"></div>' * 100}
+            </div>
+        </div>
+        """
+    return html
+
+def generate_plant_profile_pages():
+    """Generates plant profile pages as an HTML string."""
+    html = ""
+    for i in range(10): # 10 profile pages
+        html += """
+        <div class="page">
+            <h1>Plant Profile</h1>
+            <p><strong>Plant Name:</strong> _________________________</p>
+            <p><strong>Sunlight:</strong> ☐ Full Sun ☐ Partial Shade ☐ Shade</p>
+            <p><strong>Water Needs:</strong> ☐ Low ☐ Medium ☐ High</p>
+            <p><strong>Bloom Time:</strong> _________________________</p>
+            <p><strong>Pollinators Attracted:</strong> _________________</p>
+            <p><strong>Notes:</strong></p>
+            <div class="notes-box" style="height: 400px;"></div>
+        </div>
+        """
+    return html
+
+def generate_notes_pages():
+    """Generates lined notes pages as an HTML string."""
+    return """
+    <div class="page">
+        <h1>Notes & Sketches</h1>
+        <div class="lined-paper"></div>
+    </div>
+    """ * 4 # 4 notes pages
+
+def generate_planner_html_content():
     """
-    Generates pages for logging details about specific plants.
+    Generates the full content of the garden planner book as an HTML string.
     """
-    plant_log = "## Plant Logs\n\n"
-    plant_log += "Keep a detailed record of each plant in your garden.\n\n"
-    for i in range(10):  # Generate 10 plant log pages
-        plant_log += f"### Plant Record\n\n"
-        plant_log += "**Plant Name:** ____________________\n\n"
-        plant_log += "**Variety:** ____________________\n\n"
-        plant_log += "**Date Planted:** ____________\n\n"
-        plant_log += "**Germination Date:** ____________\n\n"
-        plant_log += "**Transplant Date:** ____________\n\n"
-        plant_log += "**Source (Seed Co., Nursery, etc.):** ____________________\n\n"
-        plant_log += "**Watering Schedule:**\n\n\n"
-        plant_log += "**Fertilizing Schedule:**\n\n\n"
-        plant_log += "**Notes & Observations (e.g., pests, diseases, growth milestones):**\n\n\n\n"
-        plant_log += "---\n\n"
-    return plant_log
+    html_parts = []
+    html_parts.append(generate_introduction())
+    html_parts.append(generate_yearly_overview())
+    html_parts.append(generate_monthly_planner_pages())
+    html_parts.append(generate_garden_bed_planning_pages())
+    html_parts.append(generate_plant_profile_pages())
+    html_parts.append(generate_notes_pages())
+
+    return "".join(html_parts)
