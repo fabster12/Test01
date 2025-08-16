@@ -4,13 +4,16 @@
 
 {% block content %}
 <h2>System Information</h2>
-<p>This page shows the current configuration and active models for the AI Booksmith application.</p>
+<p>This page shows the current configuration and allows for testing the integrated AI services.</p>
 
 <div class="card mt-4">
     <div class="card-header">
         <h4>Application Configuration</h4>
     </div>
     <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>Provider:</strong> <code>{{ config.provider }}</code></li>
+        <li class="list-group-item"><strong>OpenAI API Key:</strong> <code>{{ masked_openai_key }}</code></li>
+        <li class="list-group-item"><strong>Leonardo API Key:</strong> <code>{{ masked_leonardo_key }}</code></li>
         <li class="list-group-item"><strong>Flask Secret Key:</strong> <code>{{ config.flask_secret_key[:10] }}...</code> (Truncated for security)</li>
         <li class="list-group-item"><strong>Generated Books Directory:</strong> <code>{{ config.generated_books_dir }}</code></li>
         <li class="list-group-item"><strong>SSL Certificate File:</strong> <code>{{ config.ssl_cert_file or 'Not Set' }}</code></li>
@@ -39,6 +42,50 @@
             {% endif %}
         </li>
     </ul>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h4>Test LLM Prompt</h4>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('system_info') }}" method="POST">
+            <input type="hidden" name="test_type" value="llm">
+            <div class="form-group">
+                <label for="llm_prompt">Enter a simple prompt:</label>
+                <input type="text" id="llm_prompt" name="prompt" class="form-control" value="Hello, world!">
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Test LLM</button>
+        </form>
+        {% if llm_response %}
+        <div class="mt-3">
+            <strong>LLM Response:</strong>
+            <pre>{{ llm_response }}</pre>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h4>Test Image Generation</h4>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('system_info') }}" method="POST">
+            <input type="hidden" name="test_type" value="image">
+            <div class="form-group">
+                <label for="image_prompt">Enter a simple prompt:</label>
+                <input type="text" id="image_prompt" name="prompt" class="form-control" value="A cute cat wearing a hat">
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Test Image Generation</button>
+        </form>
+        {% if image_url %}
+        <div class="mt-3">
+            <strong>Generated Image:</strong>
+            <img src="{{ image_url }}" alt="Generated Image" class="img-fluid mt-2">
+        </div>
+        {% endif %}
+    </div>
 </div>
 
 <div class="mt-4">
