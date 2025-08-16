@@ -122,7 +122,7 @@ def generate_ideas():
     except Exception as e: ideas = []
     session['ideas'] = ideas
     session['project_context'] = form_data
-    return render_template('ideas.html', ideas=ideas)
+    return render_template('fiction/ideas.html', ideas=ideas)
 
 @fiction_bp.route('/select_idea', methods=['POST'])
 def select_idea():
