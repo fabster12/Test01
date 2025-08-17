@@ -1,36 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Your Garden Planner Book - AI Booksmith{% endblock %}
+{% block title %}Your Garden Plan - AI Booksmith{% endblock %}
 
 {% block content %}
-<div class="text-center">
-    <h2>Your Generated Garden Planner Book</h2>
-    <p>Here is your printable garden planner. You can print this page to create your physical book.</p>
-</div>
+<h2>Your Custom Garden Plan</h2>
 
-<div class="card mt-4">
-    <div class="card-header">
-        <h3>Cover</h3>
-    </div>
-    <div class="card-body text-center">
-        {% if cover_image_url %}
-            <img src="{{ cover_image_url }}" alt="Garden Planner Cover" class="img-fluid">
-        {% else %}
-            <p>Could not generate a cover image at this time.</p>
-        {% endif %}
-    </div>
-</div>
-
-<div class="card mt-4">
-    <div class="card-header">
-        <h3>Planner Content</h3>
-    </div>
+<div class="card">
     <div class="card-body">
-        {{ planner_content | safe }}
+        {{ planner_content | markdown }}
     </div>
 </div>
 
-<div class="text-center mt-4">
-    <a href="{{ url_for('garden_planner.index') }}" class="btn btn-secondary">Generate a New Planner</a>
-</div>
+<a href="{{ url_for('garden_planner.index') }}" class="btn btn-secondary mt-3">Create a New Plan</a>
 {% endblock %}
