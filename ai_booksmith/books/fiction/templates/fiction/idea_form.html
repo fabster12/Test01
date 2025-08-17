@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const descriptionInput = document.getElementById('description');
 
     brainstormBtn.addEventListener('click', function() {
+        console.log('Brainstorm button clicked.');
         suggestionsContainer.innerHTML = '<p>Brainstorming for you...</p>';
 
         fetch("{{ url_for('fiction.brainstorm_themes') }}", {
@@ -55,10 +56,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Received response from server:', response);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Parsed JSON data:', data);
             suggestionsContainer.innerHTML = ''; // Clear loading message
             if (data.error) {
+                console.error('Server returned an error:', data.error);
                 suggestionsContainer.innerHTML = `<p class="text-danger">${data.error}</p>`;
                 return;
             }

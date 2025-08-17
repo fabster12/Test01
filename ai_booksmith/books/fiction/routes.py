@@ -23,6 +23,8 @@ def load_project(project_id):
     with open(filepath, 'r', encoding='utf-8') as f: return json.load(f)
 
 def save_project(project_data):
+    # Ensure the projects directory exists
+    os.makedirs(PROJECTS_DIR, exist_ok=True)
     filepath = os.path.join(PROJECTS_DIR, f"{project_data['id']}.json")
     with open(filepath, 'w', encoding='utf-8') as f: json.dump(project_data, f, indent=4, ensure_ascii=False)
 
