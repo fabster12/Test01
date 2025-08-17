@@ -2,5 +2,8 @@
 .idea/
 *.iml
 
+# Configuration files
+config.yaml
+
 # Certificate files
-ai_booksmith/static/CERTIFICATE.crt
+*.crt
