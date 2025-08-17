@@ -1,5 +1,5 @@
 from flask import Flask, render_template, g, current_app, request
-from jinja2 import Markup
+from markupsafe import Markup
 import re
 from .books.fiction.routes import fiction_bp
 from .books.low_content.routes import low_content_bp
