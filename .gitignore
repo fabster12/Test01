@@ -1,0 +1,9 @@
+# IDE specific files
+.idea/
+*.iml
+
+# Configuration files
+config.yaml
+
+# Certificate files
+*.crt
