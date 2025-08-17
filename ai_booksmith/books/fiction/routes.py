@@ -13,7 +13,7 @@ from ai_booksmith.config_manager import get_config, get_model_config
 from ai_booksmith.llm_provider import get_llm_client
 from ai_booksmith.image_gen_provider import get_image_gen_client
 
-fiction_bp = Blueprint('fiction', __name__, template_folder='templates', url_prefix='/fiction')
+fiction_bp = Blueprint('fiction', __name__, template_folder='templates/fiction', url_prefix='/fiction')
 
 PROJECTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'projects'))
 
@@ -97,12 +97,12 @@ def generate_kdp_metadata(project):
 
 @fiction_bp.route('/')
 def fiction_dashboard():
-    return render_template('fiction/dashboard.html')
+    return render_template('dashboard.html')
 
 @fiction_bp.route('/new')
 def new_project_form():
     theme_data = session.get('selected_theme', {})
-    return render_template('fiction/idea_form.html', theme_data=theme_data)
+    return render_template('idea_form.html', theme_data=theme_data)
 
 @fiction_bp.route('/generate_ideas', methods=['POST'])
 def generate_ideas():
@@ -124,7 +124,7 @@ def generate_ideas():
     except Exception as e: ideas = []
     session['ideas'] = ideas
     session['project_context'] = form_data
-    return render_template('fiction/ideas.html', ideas=ideas)
+    return render_template('ideas.html', ideas=ideas)
 
 @fiction_bp.route('/select_idea', methods=['POST'])
 def select_idea():
@@ -138,7 +138,7 @@ def select_idea():
 
 @fiction_bp.route('/<project_id>/blueprint')
 def blueprint(project_id):
-    return render_template('fiction/blueprint.html', project=load_project(project_id))
+    return render_template('blueprint.html', project=load_project(project_id))
 
 @fiction_bp.route('/<project_id>/generate_blueprint', methods=['POST'])
 def generate_blueprint(project_id):
@@ -173,7 +173,7 @@ def writing_room(project_id):
         save_project(project)
     chapter_index = request.args.get('chapter_index', 0, type=int)
     current_chapter = project['chapters'][chapter_index]
-    return render_template('fiction/writing_room.html', project=project, current_chapter=current_chapter, current_chapter_index=chapter_index)
+    return render_template('writing_room.html', project=project, current_chapter=current_chapter, current_chapter_index=chapter_index)
 
 @fiction_bp.route('/<project_id>/generate_chapter/<int:chapter_index>', methods=['POST'])
 def generate_chapter(project_id, chapter_index):
@@ -208,11 +208,14 @@ def save_chapter(project_id, chapter_index):
     project['chapters'][chapter_index]['text'] = request.form.get('chapter_text')
     project['chapters'][chapter_index]['status'] = 'Approved'
     save_project(project)
+    # Redirect back to the same chapter page
+    return redirect(url_for('.writing_room', project_id=project_id, chapter_index=chapter_index))
+
+@fiction_bp.route('/<project_id>/<int:chapter_index>/generate_images', methods=['POST'])
+def generate_images_for_chapter_route(project_id, chapter_index):
+    project = load_project(project_id)
     generate_images_for_chapter(project, chapter_index)
-    next_chapter_index = chapter_index + 1
-    if next_chapter_index >= len(project['chapters']):
-        return redirect(url_for('.finalize', project_id=project_id))
-    return redirect(url_for('.writing_room', project_id=project_id, chapter_index=next_chapter_index))
+    return redirect(url_for('.writing_room', project_id=project_id, chapter_index=chapter_index))
 
 @fiction_bp.route('/<project_id>/auto_approve_all', methods=['POST'])
 def auto_approve_all(project_id):
@@ -221,7 +224,7 @@ def auto_approve_all(project_id):
 
 @fiction_bp.route('/<project_id>/finalize')
 def finalize(project_id):
-    return render_template('fiction/finalize.html', project=load_project(project_id))
+    return render_template('finalize.html', project=load_project(project_id))
 
 @fiction_bp.route('/<project_id>/build_package', methods=['POST'])
 def build_package(project_id):

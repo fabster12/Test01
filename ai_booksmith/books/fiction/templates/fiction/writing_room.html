@@ -24,15 +24,19 @@
     <div class="col-md-8">
         <h4>Chapter {{ current_chapter_index + 1 }}: {{ current_chapter.title }}</h4>
 
-        <form action="{{ url_for('fiction.save_chapter', project_id=project.id, chapter_index=current_chapter_index) }}" method="POST">
+        <form action="{{ url_for('fiction.save_chapter', project_id=project.id, chapter_index=current_chapter_index) }}" method="POST" class="d-inline">
             <div class="form-group">
                 <textarea name="chapter_text" class="form-control" rows="20">{{ current_chapter.text }}</textarea>
             </div>
-            <button type="submit" class="btn btn-success">Approve and Generate Images</button>
+            <button type="submit" class="btn btn-success">Approve Text</button>
         </form>
 
-        <form action="{{ url_for('fiction.generate_chapter', project_id=project.id, chapter_index=current_chapter_index) }}" method="POST" class="mt-2">
+        <form action="{{ url_for('fiction.generate_chapter', project_id=project.id, chapter_index=current_chapter_index) }}" method="POST" class="d-inline">
             <button type="submit" class="btn btn-primary">Generate Chapter Text</button>
+        </form>
+
+        <form action="{{ url_for('fiction.generate_images_for_chapter_route', project_id=project.id, chapter_index=current_chapter_index) }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-info">Generate Images</button>
         </form>
 
         <hr>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Finalize Book - {{ project.title }}{% endblock %}
+
+{% block content %}
+<h2>Finalize Your Book: {{ project.title }}</h2>
+<p>Your book is complete! All chapters have been written and approved. You can now build the final book package, which will include the manuscript and cover as PDFs, and KDP metadata.</p>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h4>Final Details</h4>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('fiction.build_package', project_id=project.id) }}" method="POST">
+            <div class="form-group">
+                <label for="author_name">Author Name</label>
+                <input type="text" id="author_name" name="author_name" class="form-control" value="A.I. Author" required>
+            </div>
+            <div class="form-group">
+                <label for="trim_size">Trim Size (e.g., 6x9 inches)</label>
+                <select id="trim_size" name="trim_size" class="form-control">
+                    <option value="6x9" selected>6" x 9" (152mm x 229mm)</option>
+                    <option value="5.5x8.5">5.5" x 8.5" (140mm x 216mm)</option>
+                </select>
+                <input type="hidden" name="trim_width_mm" id="trim_width_mm" value="152">
+                <input type="hidden" name="trim_height_mm" id="trim_height_mm" value="229">
+            </div>
+            <div class="form-group">
+                <label for="interior_color">Interior & Paper</label>
+                <select id="interior_color" name="interior_color" class="form-control">
+                    <option value="bw" selected>Black & white interior with cream paper</option>
+                    <option value="premium_color">Premium color interior with white paper</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success btn-lg">Build Book Package</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('trim_size').addEventListener('change', function() {
+    const selected = this.value;
+    const widthInput = document.getElementById('trim_width_mm');
+    const heightInput = document.getElementById('trim_height_mm');
+    if (selected === '6x9') {
+        widthInput.value = '152';
+        heightInput.value = '229';
+    } else if (selected === '5.5x8.5') {
+        widthInput.value = '140';
+        heightInput.value = '216';
+    }
+});
+</script>
+{% endblock %}
