@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Brainstorm Coloring Book Ideas - AI Booksmith{% endblock %}
+
+{% block content %}
+<h2>Brainstorm Coloring Book Ideas</h2>
+<p>Enter a broad topic to find specific niches, or get some random ideas from scratch.</p>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="form-group">
+            <label for="topic">Broad Topic (Optional)</label>
+            <input type="text" id="topic" name="topic" class="form-control" placeholder="e.g., Animals, Fantasy, Vehicles">
+        </div>
+        <button type="button" id="find-niches-btn" class="btn btn-primary">Find Niches</button>
+        <button type="button" id="random-ideas-btn" class="btn btn-secondary">Get Random Ideas</button>
+    </div>
+</div>
+
+<div id="suggestions-container" class="mt-4">
+    <!-- Suggestions will be loaded here via JavaScript -->
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const findNichesBtn = document.getElementById('find-niches-btn');
+    const randomIdeasBtn = document.getElementById('random-ideas-btn');
+    const topicInput = document.getElementById('topic');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+
+    function fetchSuggestions(topic = '') {
+        suggestionsContainer.innerHTML = '<p>Brainstorming...</p>';
+
+        fetch("{{ url_for('low_content.brainstorm_themes') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic: topic })
+        })
+        .then(response => response.json())
+        .then(data => {
+            suggestionsContainer.innerHTML = '';
+            if (data.error) {
+                suggestionsContainer.innerHTML = `<p class="text-danger">${data.error}</p>`;
+                return;
+            }
+            if (data.suggestions && data.suggestions.length > 0) {
+                const list = document.createElement('div');
+                list.className = 'list-group';
+                data.suggestions.forEach(suggestion => {
+                    const link = document.createElement('a');
+                    link.href = '#'; // Prevent navigation
+                    link.className = 'list-group-item list-group-item-action';
+                    link.textContent = suggestion;
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        // Here we would set the theme and move to the next step
+                        // For now, we'll just log it. This will be implemented fully later.
+                        console.log('Selected theme:', suggestion);
+
+                        // We will eventually redirect to the preview page.
+                        // Redirect to the new start_generation route to begin the preview process
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = "{{ url_for('low_content.start_generation') }}";
+
+                        const titleInput = document.createElement('input');
+                        titleInput.type = 'hidden';
+                        titleInput.name = 'book_title';
+                        titleInput.value = suggestion + ' Coloring Book';
+                        form.appendChild(titleInput);
+
+                        const themeInput = document.createElement('input');
+                        themeInput.type = 'hidden';
+                        themeInput.name = 'book_theme';
+                        themeInput.value = suggestion;
+                        form.appendChild(themeInput);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    });
+                    list.appendChild(link);
+                });
+                suggestionsContainer.appendChild(list);
+            } else {
+                suggestionsContainer.innerHTML = '<p>No suggestions were generated.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            suggestionsContainer.innerHTML = '<p class="text-danger">An error occurred.</p>';
+        });
+    }
+
+    findNichesBtn.addEventListener('click', function() {
+        const topic = topicInput.value.trim();
+        if (topic) {
+            fetchSuggestions(topic);
+        } else {
+            alert('Please enter a topic to find niches.');
+        }
+    });
+
+    randomIdeasBtn.addEventListener('click', function() {
+        fetchSuggestions(); // No topic
+    });
+});
+</script>
+{% endblock %}

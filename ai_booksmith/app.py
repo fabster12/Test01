@@ -1,4 +1,6 @@
 from flask import Flask, render_template, g, current_app, request
+from jinja2 import Markup
+import re
 from .books.fiction.routes import fiction_bp
 from .books.low_content.routes import low_content_bp
 from .config_manager import load_config, get_config, get_model_config
@@ -14,6 +16,11 @@ def mask_key(key):
 
 def create_app():
     app = Flask(__name__)
+
+    # Register custom Jinja2 filter
+    @app.template_filter('nl2br')
+    def nl2br(s):
+        return Markup(re.sub(r'\n', '<br>\n', s))
 
     # Load configuration
     config = load_config()

@@ -41,7 +41,9 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed');
     const brainstormBtn = document.getElementById('brainstorm-btn');
+    console.log('Found brainstorm button:', brainstormBtn);
     const suggestionsContainer = document.getElementById('suggestions-container');
     const genreInput = document.getElementById('genre');
     const descriptionInput = document.getElementById('description');

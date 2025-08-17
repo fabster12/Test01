@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Preview Coloring Book - AI Booksmith{% endblock %}
+
+{% block content %}
+<h2>Preview: {{ book_title }}</h2>
+<p>Here are 4 sample pages for your theme '{{ book_theme }}'. If you like them, you can proceed to generate the full book.</p>
+
+<div class="row">
+    {% for image_path in image_paths %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <img src="{{ url_for('static', filename=image_path.split('/static/')[1]) }}" class="card-img-top" alt="Coloring Page Preview">
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="mt-4">
+    <form action="{{ url_for('low_content.generate_full_book_task') }}" method="POST">
+        <button type="submit" class="btn btn-success btn-lg">Generate Full Book</button>
+        <a href="{{ url_for('low_content.coloring_book_home') }}" class="btn btn-secondary btn-lg">Start Over</a>
+    </form>
+</div>
+{% endblock %}

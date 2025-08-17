@@ -72,6 +72,20 @@ The hero confronts the antagonist and saves the day.
         }
         return MockCompletion(json.dumps(mock_data))
 
+    # For brainstorming coloring book themes
+    elif "coloring book themes" in prompt:
+        mock_data = {
+            "suggestions": ["Mystical Forest Creatures", "Cute Baby Animals", "Under the Sea Adventures", "Magical Castles and Dragons", "Robots and Spaceships"]
+        }
+        return MockCompletion(json.dumps(mock_data))
+
+    # For brainstorming coloring book subjects
+    elif "subjects for a children's coloring book" in prompt:
+        mock_data = {
+            "subjects": ["a friendly lion", "a smiling sunflower", "a curious robot", "a brave knight", "a magical unicorn", "a cheerful octopus", "a racing car", "a soaring dragon"]
+        }
+        return MockCompletion(json.dumps(mock_data))
+
     # Fallback for any other prompt
     else:
         return MockCompletion(json.dumps({"text": "This is a generic mock response for an unrecognized prompt."}))
