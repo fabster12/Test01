@@ -4,27 +4,14 @@
 
 {% block content %}
 <div class="text-center">
-    <h2>Garden Planner</h2>
-    <p class="lead">Plan your perfect garden with our AI-powered garden planner.</p>
+    <h2>Garden Planner Book</h2>
+    <p class="lead">Generate a beautiful, printable garden planner book to help you organize your gardening year.</p>
+    <p>The planner will include sections for garden layouts, planting calendars, harvest logs, and more.</p>
 </div>
 
-<form action="{{ url_for('garden_planner.generate_planner') }}" method="POST">
-    <div class="form-group">
-        <label for="garden_size">Garden Size (e.g., 10x10 feet)</label>
-        <input type="text" id="garden_size" name="garden_size" class="form-control" required>
-    </div>
-    <div class="form-group">
-        <label for="sunlight">Sunlight Exposure</label>
-        <select id="sunlight" name="sunlight" class="form-control">
-            <option value="full_sun">Full Sun</option>
-            <option value="part_shade">Part Shade</option>
-            <option value="full_shade">Full Shade</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="plant_preferences">Plant Preferences (e.g., tomatoes, roses, herbs)</label>
-        <textarea id="plant_preferences" name="plant_preferences" class="form-control" rows="3"></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Generate Planner</button>
-</form>
+<div class="text-center mt-4">
+    <form action="{{ url_for('garden_planner.generate_planner') }}" method="POST">
+        <button type="submit" class="btn btn-primary btn-lg">Generate Your Garden Planner Book</button>
+    </form>
+</div>
 {% endblock %}
