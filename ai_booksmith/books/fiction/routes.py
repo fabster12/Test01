@@ -7,7 +7,7 @@ import time
 import zipfile
 import requests
 import pypandoc
-from flask import Blueprint, render_template, request, redirect, url_for, session, abort, send_file, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, session, abort, send_file, current_app, jsonify
 from ai_booksmith.mock_provider import mock_openai_chat_completion, mock_leonardo_image_generation
 from ai_booksmith.config_manager import get_config, get_model_config
 from ai_booksmith.llm_provider import get_llm_client
@@ -260,3 +260,41 @@ def build_package(project_id):
 
     zip_buffer.seek(0)
     return send_file(zip_buffer, as_attachment=True, download_name=f'book_package_{title}.zip', mimetype='application/zip')
+
+@fiction_bp.route('/brainstorm_themes', methods=['POST'])
+def brainstorm_themes():
+    """
+    Calls the LLM to brainstorm a few genre/theme pairs and returns them as JSON.
+    """
+    llm_client = get_llm_client()
+    config = get_config()
+
+    prompt = "Brainstorm 5 interesting and unique genre-and-theme pairs for a new fiction book. For each, provide a 'genre' and a 'theme' (which is a short, evocative description). Return as a JSON object with a single key 'suggestions' which is a list of these pairs."
+
+    try:
+        if config['provider'] == 'mock':
+            # In a real mock, you'd have structured data here.
+            # For now, let's create some plausible mock suggestions.
+            suggestions = {
+                "suggestions": [
+                    {"genre": "Steampunk", "theme": "A clockwork detective solves a murder in a city powered by steam and secrets."},
+                    {"genre": "Biopunk", "theme": "A group of rebels uses illegal genetic modifications to fight a corporate dystopia."},
+                    {"genre": "Mythic Fantasy", "theme": "A young cartographer discovers that the maps of the old gods are real and lead to other worlds."},
+                    {"genre": "Solarpunk", "theme": "A community of architects builds a sustainable city in harmony with nature after an ecological collapse."},
+                    {"genre": "Gothic Romance", "theme": "A governess in a remote, crumbling manor discovers her employer is haunted by a beautiful, tragic ghost."}
+                ]
+            }
+            response_json = json.dumps(suggestions)
+        else:
+            response = llm_client.chat.completions.create(
+                model=config.get('active_openai_model'),
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
+            )
+            response_json = response.choices[0].message.content
+
+        return jsonify(json.loads(response_json))
+
+    except Exception as e:
+        print(f"Error brainstorming themes: {e}")
+        return jsonify({"error": "Failed to brainstorm themes."}), 500

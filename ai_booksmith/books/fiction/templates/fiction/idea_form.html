@@ -9,6 +9,8 @@
 <form action="{{ url_for('fiction.generate_ideas') }}" method="POST">
     <div class="form-group">
         <label for="genre">Genre</label>
+        <button type="button" id="brainstorm-btn" class="btn btn-secondary btn-sm ml-2">Brainstorm Themes</button>
+        <div id="suggestions-container" class="mt-2"></div>
         <input type="text" id="genre" name="genre" class="form-control" value="{{ theme_data.title if theme_data else 'Science Fiction' }}" required>
     </div>
     <div class="form-group">
@@ -34,4 +36,56 @@
     </div>
     <button type="submit" class="btn btn-primary">Generate Ideas</button>
 </form>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const brainstormBtn = document.getElementById('brainstorm-btn');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+    const genreInput = document.getElementById('genre');
+    const descriptionInput = document.getElementById('description');
+
+    brainstormBtn.addEventListener('click', function() {
+        suggestionsContainer.innerHTML = '<p>Brainstorming for you...</p>';
+
+        fetch("{{ url_for('fiction.brainstorm_themes') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            suggestionsContainer.innerHTML = ''; // Clear loading message
+            if (data.error) {
+                suggestionsContainer.innerHTML = `<p class="text-danger">${data.error}</p>`;
+                return;
+            }
+            if (data.suggestions && data.suggestions.length > 0) {
+                const list = document.createElement('ul');
+                list.className = 'list-group';
+                data.suggestions.forEach(suggestion => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item list-group-item-action';
+                    listItem.style.cursor = 'pointer';
+                    listItem.innerHTML = `<strong>${suggestion.genre}:</strong> ${suggestion.theme}`;
+                    listItem.addEventListener('click', function() {
+                        genreInput.value = suggestion.genre;
+                        descriptionInput.value = suggestion.theme;
+                        suggestionsContainer.innerHTML = ''; // Clear suggestions after selection
+                    });
+                    list.appendChild(listItem);
+                });
+                suggestionsContainer.appendChild(list);
+            } else {
+                suggestionsContainer.innerHTML = '<p>No suggestions were generated. Please try again.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            suggestionsContainer.innerHTML = '<p class="text-danger">An error occurred while brainstorming.</p>';
+        });
+    });
+});
+</script>
 {% endblock %}
