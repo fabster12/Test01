@@ -1,5 +1,10 @@
 # AI Booksmith Configuration
 
+# Provider setting: 'mock' or 'openai'
+# 'mock' uses placeholder data and does not call any APIs.
+# 'openai' uses the live OpenAI and Leonardo APIs.
+provider: 'mock'
+
 # API Keys - Replace with your actual keys
 # You can also set these as environment variables: OPENAI_API_KEY, LEONARDO_API_KEY
 openai_api_key: "YOUR_OPENAI_API_KEY"

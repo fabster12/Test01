@@ -68,10 +68,3 @@ def get_available_models(provider):
     model_config = get_model_config()
     return model_config.get(provider, [])
 
-def set_active_model(provider, model_name):
-    """Sets the active model for a given provider."""
-    config = get_config()
-    if provider == 'openai':
-        config['active_openai_model'] = model_name
-    elif provider == 'leonardo':
-        config['active_leonardo_model'] = model_name

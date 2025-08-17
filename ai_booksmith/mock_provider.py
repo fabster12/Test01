@@ -13,26 +13,72 @@ class MockCompletion:
         self.choices = [MockChoice(content)]
 
 def mock_openai_chat_completion(model, messages, response_format=None):
-    # Simulate a response for brainstorming subjects
-    if "brainstorm a list" in messages[0]['content']:
-        subjects = ["friendly robot", "curious alien", "magical castle", "flying car", "talking animal"]
-        return MockCompletion(json.dumps(subjects))
-    # Simulate a response for generating themes
-    elif "brainstorm 5 themes" in messages[0]['content']:
-        themes = {
-            "themes": [
-                {"title": "The Last Starship", "description": "A generation ship on a final, desperate voyage.", "reasoning": "High-concept sci-fi with strong emotional stakes."},
-                {"title": "The Clockwork Detective", "description": "A steampunk mystery set in Victorian London.", "reasoning": "Combines two popular genres with a unique aesthetic."},
-                {"title": "The Dragon's Heir", "description": "A young orphan discovers they are the last of a powerful lineage.", "reasoning": "Classic fantasy trope with strong potential for world-building."},
-                {"title": "The City of Whispers", "description": "A noir thriller set in a city where secrets are currency.", "reasoning": "Atmospheric and suspenseful, with a unique aural twist."},
-                {"title": "The Gastronomist", "description": "A culinary adventure through a fantastical world.", "reasoning": "A lighthearted and sensory-rich story with a unique focus."}
+    """
+    A mock function that returns realistic, structured data based on the prompt.
+    """
+    prompt = ""
+    # In the new OpenAI API versions, `messages` is a list of dicts
+    if isinstance(messages, list) and messages:
+        prompt = messages[-1]['content']
+
+    # For generating book ideas
+    if "generate 10 book ideas" in prompt:
+        mock_data = {
+            "ideas": [
+                {"title": "The Quantum Thief", "logline": "A master thief steals memories in a futuristic city.", "writing_style": "Hard-boiled sci-fi noir", "art_style": "Cyberpunk anime"},
+                {"title": "The Last Garden", "logline": "In a world covered by desert, a young girl discovers the last patch of green.", "writing_style": "Hopeful post-apocalyptic", "art_style": "Studio Ghibli inspired"},
+                {"title": "The Alchemist's Daughter", "logline": "A young woman must complete her father's work to save her city from a magical plague.", "writing_style": "High fantasy with a focus on magic systems", "art_style": "Classic fantasy illustration"},
+                {"title": "The Star Sailors", "logline": "A crew of explorers sails the cosmos on solar-powered ships.", "writing_style": "Optimistic space opera", "art_style": "Colorful retro-futurism"},
+                {"title": "The Whispering Woods", "logline": "A group of children get lost in an enchanted forest where the trees have secrets.", "writing_style": "Dark fairytale", "art_style": "Tim Burton-esque"}
             ]
         }
-        return MockCompletion(json.dumps(themes))
+        return MockCompletion(json.dumps(mock_data))
+
+    # For generating a book blueprint (synopsis and blurb)
+    elif "generate a detailed, multi-chapter synopsis" in prompt:
+        mock_data = {
+            "synopsis": """
+# Chapter 1: The Discovery
+Our hero, a young archivist, finds a hidden map in a dusty tome.
+# Chapter 2: The Journey Begins
+Following the map, they venture into the forbidden lands.
+# Chapter 3: The First Trial
+They overcome a great obstacle and learn a valuable lesson.
+# Chapter 4: The Betrayal
+A trusted companion reveals their true intentions.
+# Chapter 5: The Final Confrontation
+The hero confronts the antagonist and saves the day.
+            """,
+            "back_cover_blurb": "In a world of forgotten lore, one archivist's discovery will change everything. A perilous journey, a shocking betrayal, and a destiny to be fulfilled. Will they be able to unlock the secrets of the past before it's too late?"
+        }
+        return MockCompletion(json.dumps(mock_data))
+
+    # For generating image prompts from a chapter
+    elif "visually interesting scenes to illustrate" in prompt:
+        mock_data = {
+            "scenes": [
+                "The hero holding the glowing map in the dark library.",
+                "A wide shot of the hero looking out over the vast, forbidden lands.",
+                "A close-up of the hero's face as they realize their companion's betrayal."
+            ]
+        }
+        return MockCompletion(json.dumps(mock_data))
+
+    # For generating KDP metadata
+    elif "generate KDP metadata" in prompt:
+        mock_data = {
+            "keywords": ["fantasy", "adventure", "magic", "ancient secrets", "epic journey", "betrayal", "hero's quest"],
+            "categories": ["Fiction > Fantasy > Epic", "Fiction > Fantasy > Action & Adventure"]
+        }
+        return MockCompletion(json.dumps(mock_data))
+
+    # Fallback for any other prompt
     else:
-        return MockCompletion("This is a mock response.")
+        return MockCompletion(json.dumps({"text": "This is a generic mock response for an unrecognized prompt."}))
+
 
 def mock_leonardo_image_generation(prompt, model_id=None):
+    # This mock can remain simple as it just needs to return a plausible image URL.
     return {
         "generations_by_pk": {
             "generated_images": [
