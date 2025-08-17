@@ -118,10 +118,16 @@ def generate_ideas():
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
+            ideas = json.loads(response.choices[0].message.content).get('ideas', [])
         else:
             response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
-        ideas = json.loads(response.choices[0].message.content).get('ideas', [])
-    except Exception as e: ideas = []
+            response_data = json.loads(response.choices[0].message.content)
+            # Handle both 'ideas' and 'books' as possible keys
+            ideas = response_data.get('ideas', response_data.get('books', []))
+
+    except Exception as e:
+        print(f"Error generating or parsing ideas: {e}")
+        ideas = []
     session['ideas'] = ideas
     session['project_context'] = form_data
     return render_template('ideas.html', ideas=ideas)
