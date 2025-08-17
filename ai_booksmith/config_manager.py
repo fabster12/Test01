@@ -8,8 +8,21 @@ def load_config():
     Environment variables have the highest priority.
     """
     # Base config from file
-    with open('config.yaml', 'r') as f:
-        config = yaml.safe_load(f)
+    try:
+        with open('config.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+    except FileNotFoundError:
+        print("WARNING: config.yaml not found. Using default mock configuration.")
+        config = {
+            'provider': 'mock',
+            'openai_api_key': 'mock_key',
+            'leonardo_api_key': 'mock_key',
+            'flask_secret_key': 'a-test-secret-key',
+            'active_openai_model': 'mock_model',
+            'active_leonardo_model': 'mock_model',
+            'generated_books_dir': 'generated_books_test',
+            'ssl_cert_file': ''
+        }
 
     # Load models config
     with open('models.yaml', 'r') as f:

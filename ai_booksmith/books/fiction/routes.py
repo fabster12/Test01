@@ -138,7 +138,7 @@ def select_idea():
 
 @fiction_bp.route('/<project_id>/blueprint')
 def blueprint(project_id):
-    return render_template('blueprint.html', project=load_project(project_id))
+    return render_template('fiction/blueprint.html', project=load_project(project_id))
 
 @fiction_bp.route('/<project_id>/generate_blueprint', methods=['POST'])
 def generate_blueprint(project_id):
@@ -173,7 +173,7 @@ def writing_room(project_id):
         save_project(project)
     chapter_index = request.args.get('chapter_index', 0, type=int)
     current_chapter = project['chapters'][chapter_index]
-    return render_template('writing_room.html', project=project, current_chapter=current_chapter, current_chapter_index=chapter_index)
+    return render_template('fiction/writing_room.html', project=project, current_chapter=current_chapter, current_chapter_index=chapter_index)
 
 @fiction_bp.route('/<project_id>/generate_chapter/<int:chapter_index>', methods=['POST'])
 def generate_chapter(project_id, chapter_index):
@@ -221,7 +221,7 @@ def auto_approve_all(project_id):
 
 @fiction_bp.route('/<project_id>/finalize')
 def finalize(project_id):
-    return render_template('finalize.html', project=load_project(project_id))
+    return render_template('fiction/finalize.html', project=load_project(project_id))
 
 @fiction_bp.route('/<project_id>/build_package', methods=['POST'])
 def build_package(project_id):
