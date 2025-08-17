@@ -1,15 +1,21 @@
 from ...llm_provider import get_llm_client
 from ...image_gen_provider import get_image_gen_client
+from ...config_manager import get_config, get_model_config
 
 def generate_cover_image():
     """
     Generates a cover image for the garden planner using Leonardo.
     """
+    config = get_config()
+    model_config = get_model_config()
     image_gen_client = get_image_gen_client()
     prompt = "A beautiful watercolor illustration of a lush urban balcony garden teeming with bees, butterflies, and hummingbirds visiting colorful flowers. The style should be soft and inviting, suitable for a book cover. The title 'The Urban Pollinator Garden Planner' should be integrated gracefully into the design."
 
+    active_leonardo_model_name = config.get('active_leonardo_model')
+    leonardo_model_id = next((m['id'] for m in model_config.get('leonardo', []) if m['name'] == active_leonardo_model_name), None)
+
     try:
-        generation_id = image_gen_client.generate(prompt)
+        generation_id = image_gen_client.generate(prompt, model_id=leonardo_model_id)
         image_url = image_gen_client.poll_for_image(generation_id)
         return image_url
     except Exception as e:
@@ -18,12 +24,17 @@ def generate_cover_image():
 
 def generate_introduction():
     """Generates the introduction section as an HTML string."""
-    # Using an LLM to generate a friendly, niche-specific introduction
+    config = get_config()
+    model_config = get_model_config()
     llm_client = get_llm_client()
     prompt = "Write a brief, welcoming introduction for 'The Urban Pollinator Garden Planner'. Explain why pollinator-friendly gardens are important, especially in urban areas. Keep it to one or two short paragraphs."
+
+    active_openai_model_name = config.get('active_openai_model')
+    openai_model_id = next((m['id'] for m in model_config.get('openai', []) if m['name'] == active_openai_model_name), None)
+
     try:
         response = llm_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=openai_model_id,
             messages=[{"role": "user", "content": prompt}]
         )
         intro_text = response.choices[0].message.content.replace('\n', '<br>')

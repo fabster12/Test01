@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, current_app, jsonify
-from ai_booksmith.config_manager import get_config
+from ai_booksmith.config_manager import get_config, get_model_config
 from ai_booksmith.llm_provider import get_llm_client
 from ai_booksmith.image_gen_provider import get_image_gen_client
 from ai_booksmith.mock_provider import mock_openai_chat_completion, mock_leonardo_image_generation
@@ -27,6 +27,26 @@ def _extract_list_from_json(response_data):
                 return value
     return []
 
+def _get_model_id(provider):
+    """Gets the model ID for a given provider, with case-insensitive name matching."""
+    config = get_config()
+    model_config = get_model_config()
+    active_model_name_key = f'active_{provider}_model'
+    active_model_name = config.get(active_model_name_key, '').lower()
+
+    if not active_model_name:
+        return None
+
+    model_list = model_config.get(provider, [])
+    model_id = next((m['id'] for m in model_list if m['name'].lower() == active_model_name), None)
+
+    print(f"DEBUG: Active {provider.capitalize()} Model Name: {config.get(active_model_name_key)}")
+    print(f"DEBUG: Found {provider.capitalize()} Model ID: {model_id}")
+    if not model_id:
+        print(f"ERROR: Could not find a matching model ID for name '{config.get(active_model_name_key)}' in models.yaml")
+
+    return model_id
+
 @low_content_bp.route('/coloring_book', methods=['GET'])
 def coloring_book_home():
     """Displays the new idea brainstorming form."""
@@ -45,12 +65,14 @@ def brainstorm_themes():
     else:
         prompt = "Brainstorm 5 interesting and unique themes for a children's coloring book from scratch. Return as a JSON object with a 'suggestions' key, which is a list of strings."
 
+    openai_model_id = _get_model_id('openai')
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role": "user", "content": prompt}])
         else:
             response = llm_client.chat.completions.create(
-                model=config.get('active_openai_model'),
+                model=openai_model_id,
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )
@@ -134,12 +156,14 @@ def _generate_coloring_pages(num_pages):
 
     prompt = f"Brainstorm a list of {num_pages} unique and simple subjects for a children's coloring book with the theme '{book_theme}'. The subjects should be single objects or characters. Do not include any of the following subjects: {', '.join(existing_subjects)}. Return the list as a JSON object with a 'subjects' key, which is an array of strings."
 
+    openai_model_id = _get_model_id('openai')
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role": "user", "content": prompt}])
         else:
             response = llm_client.chat.completions.create(
-                model=config.get('active_openai_model'),
+                model=openai_model_id,
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )
@@ -150,6 +174,7 @@ def _generate_coloring_pages(num_pages):
         return [], existing_subjects
 
     image_paths = []
+    leonardo_model_id = _get_model_id('leonardo')
 
     for subject in new_subjects:
         try:
@@ -157,7 +182,7 @@ def _generate_coloring_pages(num_pages):
                 image_url = mock_leonardo_image_generation(prompt=None)['generations_by_pk']['generated_images'][0]['url']
             else:
                 image_prompt = f"A simple, clean line art coloring book page for children featuring a {subject}. The lines should be thick and clear, on a pure white background."
-                generation_id = image_gen_client.generate(image_prompt, model_id=config.get('active_leonardo_model'))
+                generation_id = image_gen_client.generate(image_prompt, model_id=leonardo_model_id)
                 image_url = image_gen_client.poll_for_image(generation_id)
 
             if image_url:

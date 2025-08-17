@@ -70,8 +70,10 @@ def create_app():
             if test_type == 'llm':
                 try:
                     llm_client = get_llm_client()
+                    active_openai_model_name = config.get('active_openai_model')
+                    openai_model_id = next((m['id'] for m in model_config.get('openai', []) if m['name'] == active_openai_model_name), None)
                     response = llm_client.chat.completions.create(
-                        model=config.get('active_openai_model'),
+                        model=openai_model_id,
                         messages=[{"role": "user", "content": prompt}]
                     )
                     llm_response = response.choices[0].message.content
@@ -81,7 +83,9 @@ def create_app():
             elif test_type == 'image':
                 try:
                     image_gen_client = get_image_gen_client()
-                    generation_id = image_gen_client.generate(prompt, model_id=config.get('active_leonardo_model'))
+                    active_leonardo_model_name = config.get('active_leonardo_model')
+                    leonardo_model_id = next((m['id'] for m in model_config.get('leonardo', []) if m['name'] == active_leonardo_model_name), None)
+                    generation_id = image_gen_client.generate(prompt, model_id=leonardo_model_id)
                     image_url = image_gen_client.poll_for_image(generation_id)
                     if not image_url:
                         image_url = "Image generation timed out or failed."

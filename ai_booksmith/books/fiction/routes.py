@@ -27,6 +27,26 @@ def _extract_list_from_json(response_data):
                 return value
     return []
 
+def _get_model_id(provider):
+    """Gets the model ID for a given provider, with case-insensitive name matching."""
+    config = get_config()
+    model_config = get_model_config()
+    active_model_name_key = f'active_{provider}_model'
+    active_model_name = config.get(active_model_name_key, '').lower()
+
+    if not active_model_name:
+        return None
+
+    model_list = model_config.get(provider, [])
+    model_id = next((m['id'] for m in model_list if m['name'].lower() == active_model_name), None)
+
+    print(f"DEBUG: Active {provider.capitalize()} Model Name: {config.get(active_model_name_key)}")
+    print(f"DEBUG: Found {provider.capitalize()} Model ID: {model_id}")
+    if not model_id:
+        print(f"ERROR: Could not find a matching model ID for name '{config.get(active_model_name_key)}' in models.yaml")
+
+    return model_id
+
 def load_project(project_id):
     filepath = os.path.join(PROJECTS_DIR, f"{project_id}.json")
     if not os.path.exists(filepath): return None
@@ -42,7 +62,6 @@ def parse_chapters_from_synopsis(synopsis):
 
 def generate_images_for_chapter(project, chapter_index):
     config = get_config()
-    model_config = get_model_config()
     llm_client = get_llm_client()
     image_gen_client = get_image_gen_client()
 
@@ -51,11 +70,13 @@ def generate_images_for_chapter(project, chapter_index):
     is_bw = project.get('final_settings', {}).get('interior_color') == 'bw'
     scene_prompt = f'Read the following chapter. Identify 3 visually interesting scenes to illustrate. Return a JSON object with a key "scenes" containing a list of strings.'
 
+    openai_model_id = _get_model_id('openai')
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":scene_prompt}])
         else:
-            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": scene_prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": scene_prompt}], response_format={"type": "json_object"})
 
         scenes_data = json.loads(response.choices[0].message.content)
         scenes = _extract_list_from_json(scenes_data)
@@ -65,6 +86,8 @@ def generate_images_for_chapter(project, chapter_index):
         scenes = []
 
     generated_images = []
+    leonardo_model_id = _get_model_id('leonardo')
+
     for scene_desc in scenes:
         try:
             if config['provider'] == 'mock':
@@ -73,7 +96,7 @@ def generate_images_for_chapter(project, chapter_index):
             else:
                 bw_prompt = "black and white, grayscale, " if is_bw else ""
                 image_prompt = f"{scene_desc}, {bw_prompt}in the style of {art_style}"
-                generation_id = image_gen_client.generate(image_prompt, model_id=config.get('active_leonardo_model'))
+                generation_id = image_gen_client.generate(image_prompt, model_id=leonardo_model_id)
                 image_url = image_gen_client.poll_for_image(generation_id)
 
             if image_url:
@@ -89,11 +112,13 @@ def generate_kdp_metadata(project):
     language = project.get('language', 'English')
     prompt = f"You are a book marketing expert for Amazon KDP. For a book with title '{project['title']}' and description '{project.get('final_settings',{}).get('description', project['logline'])}', generate KDP metadata. Provide JSON with keys 'keywords' (a list of 7 relevant strings) and 'categories' (a list of 2 relevant strings). Provide keywords in {language}."
 
+    openai_model_id = _get_model_id('openai')
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
 
         metadata = json.loads(response.choices[0].message.content)
         keywords = metadata.get('keywords', [])
@@ -116,23 +141,19 @@ def generate_ideas():
     config = get_config()
     llm_client = get_llm_client()
     form_data = request.form.to_dict()
-    prompt = f'You are a creative assistant. Based on Genre: "{form_data["genre"]}" and Description: "{form_data["description"]}", generate 10 book ideas. For each, provide: "title", "logline", "writing_style", "art_style". Return as JSON. Write all text in {form_data["language"]}. The list should be under a key named "ideas".'
+    is_niche = form_data.get('niche') == 'on'
 
-    active_openai_model_name = config.get('active_openai_model')
-    print(f"DEBUG: Active OpenAI Model Name from config: {active_openai_model_name}")
+    niche_instruction = "focus on creating highly specific, niche, and marketable sub-genres and unique concepts that would stand out on Amazon KDP." if is_niche else ""
 
-    model_config = get_model_config().get('openai', [])
-    openai_model_id = next((m['id'] for m in model_config if m['name'] == active_openai_model_name), None)
-    print(f"DEBUG: Found OpenAI Model ID: {openai_model_id}")
+    prompt = f'You are a creative assistant. Based on Genre: "{form_data["genre"]}" and Description: "{form_data["description"]}", generate 10 book ideas. {niche_instruction} For each, provide: "title", "logline", "writing_style", "art_style". Return as JSON. Write all text in {form_data["language"]}. The list should be under a key named "ideas".'
 
-    if not openai_model_id:
-        print(f"ERROR: Could not find a matching model ID for name '{active_openai_model_name}' in models.yaml")
+    openai_model_id = _get_model_id('openai')
 
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
 
         response_data = json.loads(response.choices[0].message.content)
         ideas = _extract_list_from_json(response_data)
@@ -177,11 +198,13 @@ def generate_blueprint(project_id):
     project = load_project(project_id)
     prompt = f"You are a master storyteller. For a {project.get('word_count', 20000)}-word book titled '{project['title']}', generate a detailed, multi-chapter synopsis and a compelling back cover blurb. Return as JSON with keys 'synopsis' and 'back_cover_blurb'. Write all text content in {project.get('language', 'English')}."
 
+    openai_model_id = _get_model_id('openai')
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
 
         data = json.loads(response.choices[0].message.content)
         project['synopsis'] = data.get('synopsis', 'Error: Could not generate synopsis.')
@@ -216,11 +239,13 @@ def generate_chapter(project_id, chapter_index):
     context_summary = f"Summary of previous chapters:\\n{previous_chapters_text[:5000]}..." if previous_chapters_text else "This is the first chapter."
     prompt = f"You are a novelist. Write the full text for Chapter {chapter_index + 1}: {project['chapters'][chapter_index]['title']}. Chapter should be ~{words_per_chapter:.0f} words. Write in {language}. Context: {context_summary}."
 
+    openai_model_id = _get_model_id('openai')
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "user", "content": prompt}])
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "user", "content": prompt}])
 
         project['chapters'][chapter_index]['text'] = response.choices[0].message.content
         project['chapters'][chapter_index]['status'] = 'Generated'
@@ -298,11 +323,13 @@ def brainstorm_themes():
     config = get_config()
     prompt = "Brainstorm 5 interesting and unique genre-and-theme pairs for a new fiction book. For each, provide a 'genre' and a 'theme' (which is a short, evocative description). Return as a JSON object with a single key 'suggestions' which is a list of these pairs."
 
+    openai_model_id = _get_model_id('openai')
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
 
         response_data = json.loads(response.choices[0].message.content)
         suggestions = _extract_list_from_json(response_data)

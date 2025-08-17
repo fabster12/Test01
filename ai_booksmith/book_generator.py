@@ -1,7 +1,7 @@
 import os
 import pypandoc
 from .llm_provider import get_llm_client
-from .config_manager import get_config
+from .config_manager import get_config, get_model_config
 
 def create_coloring_book_pdf(title, image_paths, subjects, output_dir):
     """
@@ -10,6 +10,7 @@ def create_coloring_book_pdf(title, image_paths, subjects, output_dir):
     """
     llm_client = get_llm_client()
     config = get_config()
+    model_config = get_model_config()
     markdown_content = f"---\ntitle: {title}\n---\n\n"
 
     # Add a title page
@@ -25,8 +26,10 @@ def create_coloring_book_pdf(title, image_paths, subjects, output_dir):
         subject = subjects[i]
         fact_prompt = f"Tell me one single, interesting, and simple fun fact about a {subject} for a children's coloring book page. Respond with only the fact, in one sentence."
         try:
+            active_openai_model_name = config.get('active_openai_model')
+            openai_model_id = next((m['id'] for m in model_config.get('openai', []) if m['name'] == active_openai_model_name), None)
             response = llm_client.chat.completions.create(
-                model=config.get('active_openai_model'),
+                model=openai_model_id,
                 messages=[{"role": "user", "content": fact_prompt}]
             )
             fun_fact = response.choices[0].message.content
