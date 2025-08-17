@@ -10,17 +10,27 @@ import requests
 from ... import book_generator
 
 low_content_bp = Blueprint('low_content', __name__,
-                           template_folder='templates',
+                           template_folder='templates/low_content',
                            static_folder='static',
                            url_prefix='/low_content')
 
 # In-memory storage for generated content
 generated_coloring_books = {}
 
+def _extract_list_from_json(response_data):
+    """Extracts the first list found in a dictionary from a JSON response."""
+    if isinstance(response_data, list):
+        return response_data
+    if isinstance(response_data, dict):
+        for key, value in response_data.items():
+            if isinstance(value, list):
+                return value
+    return []
+
 @low_content_bp.route('/coloring_book', methods=['GET'])
 def coloring_book_home():
     """Displays the new idea brainstorming form."""
-    return render_template('low_content/idea_form.html')
+    return render_template('idea_form.html')
 
 @low_content_bp.route('/brainstorm_themes', methods=['POST'])
 def brainstorm_themes():
@@ -44,8 +54,9 @@ def brainstorm_themes():
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )
-        suggestions = json.loads(response.choices[0].message.content)
-        return jsonify(suggestions)
+        response_data = json.loads(response.choices[0].message.content)
+        suggestions = _extract_list_from_json(response_data)
+        return jsonify({"suggestions": suggestions})
     except Exception as e:
         current_app.logger.error(f"Error brainstorming themes: {e}")
         return jsonify({"error": "Failed to brainstorm themes."}), 500
@@ -73,7 +84,7 @@ def preview_pages():
     if 'session_id' not in session:
         return redirect(url_for('low_content.coloring_book_home'))
 
-    return render_template('low_content/preview.html',
+    return render_template('preview.html',
                            book_title=session.get('book_title'),
                            book_theme=session.get('book_theme'),
                            session_id=session.get('session_id'))
@@ -132,7 +143,8 @@ def _generate_coloring_pages(num_pages):
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )
-        new_subjects = json.loads(response.choices[0].message.content).get('subjects', [])
+        response_data = json.loads(response.choices[0].message.content)
+        new_subjects = _extract_list_from_json(response_data)
     except Exception as e:
         current_app.logger.error(f"Error brainstorming subjects: {e}")
         return [], existing_subjects
@@ -149,7 +161,6 @@ def _generate_coloring_pages(num_pages):
                 image_url = image_gen_client.poll_for_image(generation_id)
 
             if image_url:
-                # In mock mode, we don't need to download the image, just use the path
                 if config['provider'] == 'mock':
                     image_paths.append(image_url)
                 else:
@@ -181,6 +192,6 @@ def build_coloring_book():
         output_dir=session.get('session_dir')
     )
 
-    return render_template('low_content/build_coloring_book.html',
+    return render_template('build_coloring_book.html',
                            pdf_path=os.path.basename(pdf_path),
                            session_id=session_id)

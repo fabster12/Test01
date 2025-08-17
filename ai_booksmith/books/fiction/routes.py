@@ -17,13 +17,22 @@ fiction_bp = Blueprint('fiction', __name__, template_folder='templates/fiction',
 
 PROJECTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'projects'))
 
+def _extract_list_from_json(response_data):
+    """Extracts the first list found in a dictionary from a JSON response."""
+    if isinstance(response_data, list):
+        return response_data
+    if isinstance(response_data, dict):
+        for key, value in response_data.items():
+            if isinstance(value, list):
+                return value
+    return []
+
 def load_project(project_id):
     filepath = os.path.join(PROJECTS_DIR, f"{project_id}.json")
     if not os.path.exists(filepath): return None
     with open(filepath, 'r', encoding='utf-8') as f: return json.load(f)
 
 def save_project(project_data):
-    # Ensure the projects directory exists
     os.makedirs(PROJECTS_DIR, exist_ok=True)
     filepath = os.path.join(PROJECTS_DIR, f"{project_data['id']}.json")
     with open(filepath, 'w', encoding='utf-8') as f: json.dump(project_data, f, indent=4, ensure_ascii=False)
@@ -40,59 +49,57 @@ def generate_images_for_chapter(project, chapter_index):
     chapter_text = project['chapters'][chapter_index]['text']
     art_style = project['art_style']
     is_bw = project.get('final_settings', {}).get('interior_color') == 'bw'
-    scene_prompt = f'Read the following chapter. Identify 3 visually interesting scenes to illustrate. Return a JSON object: {{"scenes": ["scene1", "scene2", "scene3"]}}'
-
-    active_openai_model_name = config.get('active_openai_model')
-    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+    scene_prompt = f'Read the following chapter. Identify 3 visually interesting scenes to illustrate. Return a JSON object with a key "scenes" containing a list of strings.'
 
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":scene_prompt}])
         else:
-            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": scene_prompt + f"---{chapter_text[:4000]}---"}], response_format={"type": "json_object"})
-        scenes = json.loads(response.choices[0].message.content).get('scenes', [])
+            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": scene_prompt}], response_format={"type": "json_object"})
+
+        scenes_data = json.loads(response.choices[0].message.content)
+        scenes = _extract_list_from_json(scenes_data)
+
     except Exception as e:
         print(f"Error generating image prompts: {e}")
         scenes = []
 
     generated_images = []
-    active_leonardo_model_name = config.get('active_leonardo_model')
-    leonardo_model_id = next((m['id'] for m in model_config['leonardo'] if m['name'] == active_leonardo_model_name), None)
-
     for scene_desc in scenes:
         try:
             if config['provider'] == 'mock':
                 mock_response = mock_leonardo_image_generation(prompt=scene_desc)
                 image_url = mock_response['generations_by_pk']['generated_images'][0]['url']
-                generated_images.append({"prompt": scene_desc, "url": image_url})
             else:
                 bw_prompt = "black and white, grayscale, " if is_bw else ""
                 image_prompt = f"{scene_desc}, {bw_prompt}in the style of {art_style}"
-                generation_id = image_gen_client.generate(image_prompt, model_id=leonardo_model_id)
+                generation_id = image_gen_client.generate(image_prompt, model_id=config.get('active_leonardo_model'))
                 image_url = image_gen_client.poll_for_image(generation_id)
-                if image_url:
-                    generated_images.append({"prompt": scene_desc, "url": image_url})
+
+            if image_url:
+                generated_images.append({"prompt": scene_desc, "url": image_url})
         except Exception as e: print(f"Error generating image: {e}")
+
     project['chapters'][chapter_index]['images'] = generated_images
     save_project(project)
 
 def generate_kdp_metadata(project):
     config = get_config()
-    model_config = get_model_config()
     llm_client = get_llm_client()
     language = project.get('language', 'English')
-    prompt = f"You are a book marketing expert for Amazon KDP. For a book with title '{project['title']}' and description '{project.get('final_settings',{}).get('description', project['logline'])}', generate KDP metadata. Provide JSON with keys: 'keywords' (a list of 7 relevant strings) and 'categories' (a list of 2 relevant strings from the official KDP category list). Provide keywords in {language}."
-
-    active_openai_model_name = config.get('active_openai_model')
-    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+    prompt = f"You are a book marketing expert for Amazon KDP. For a book with title '{project['title']}' and description '{project.get('final_settings',{}).get('description', project['logline'])}', generate KDP metadata. Provide JSON with keys 'keywords' (a list of 7 relevant strings) and 'categories' (a list of 2 relevant strings). Provide keywords in {language}."
 
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+
         metadata = json.loads(response.choices[0].message.content)
-        return f"Keywords:\n- " + "\n- ".join(metadata.get('keywords', [])) + "\n\nCategories:\n- " + "\n- ".join(metadata.get('categories', []))
+        keywords = metadata.get('keywords', [])
+        categories = metadata.get('categories', [])
+        return f"Keywords:\n- " + "\n- ".join(keywords) + "\n\nCategories:\n- " + "\n- ".join(categories)
+
     except Exception as e: return f"Error generating metadata: {e}"
 
 @fiction_bp.route('/')
@@ -107,27 +114,23 @@ def new_project_form():
 @fiction_bp.route('/generate_ideas', methods=['POST'])
 def generate_ideas():
     config = get_config()
-    model_config = get_model_config()
     llm_client = get_llm_client()
     form_data = request.form.to_dict()
-    prompt = f'You are a creative assistant. Based on Genre: "{form_data["genre"]}" and Description: "{form_data["description"]}", generate 10 book ideas. Target word count is {form_data["word_count"]}. For each, provide: "title", "logline", "writing_style", "art_style". Return as JSON. Write all text in {form_data["language"]}.'
-
-    active_openai_model_name = config.get('active_openai_model')
-    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+    prompt = f'You are a creative assistant. Based on Genre: "{form_data["genre"]}" and Description: "{form_data["description"]}", generate 10 book ideas. For each, provide: "title", "logline", "writing_style", "art_style". Return as JSON. Write all text in {form_data["language"]}. The list should be under a key named "ideas".'
 
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
-            ideas = json.loads(response.choices[0].message.content).get('ideas', [])
         else:
-            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
-            response_data = json.loads(response.choices[0].message.content)
-            # Handle both 'ideas' and 'books' as possible keys
-            ideas = response_data.get('ideas', response_data.get('books', []))
+            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
+
+        response_data = json.loads(response.choices[0].message.content)
+        ideas = _extract_list_from_json(response_data)
 
     except Exception as e:
         print(f"Error generating or parsing ideas: {e}")
         ideas = []
+
     session['ideas'] = ideas
     session['project_context'] = form_data
     return render_template('ideas.html', ideas=ideas)
@@ -135,10 +138,21 @@ def generate_ideas():
 @fiction_bp.route('/select_idea', methods=['POST'])
 def select_idea():
     selected_index = int(request.form.get('selected_idea_index'))
-    ideas, context = session.get('ideas'), session.get('project_context', {})
+    ideas = session.get('ideas', [])
+    if not ideas or selected_index >= len(ideas):
+        return "Error: Invalid idea selected.", 400
+
     selected_idea = ideas[selected_index]
     project_id = str(uuid.uuid4())
-    project_data = {"id": project_id, "book_type": 'fiction', **context, **selected_idea, "synopsis": "", "back_cover_blurb": "", "chapters": []}
+    project_data = {
+        "id": project_id,
+        "book_type": 'fiction',
+        **session.get('project_context', {}),
+        **selected_idea,
+        "synopsis": "",
+        "back_cover_blurb": "",
+        "chapters": []
+    }
     save_project(project_data)
     return redirect(url_for('.blueprint', project_id=project_id))
 
@@ -149,25 +163,23 @@ def blueprint(project_id):
 @fiction_bp.route('/<project_id>/generate_blueprint', methods=['POST'])
 def generate_blueprint(project_id):
     config = get_config()
-    model_config = get_model_config()
     llm_client = get_llm_client()
     project = load_project(project_id)
-    language = project.get('language', 'English')
-    word_count = project.get('word_count', 20000)
-    prompt = f"You are a master storyteller. For a {word_count}-word book titled '{project['title']}', generate a detailed, multi-chapter synopsis and a compelling back cover blurb. Return as JSON with keys 'synopsis' and 'back_cover_blurb'. Write all text content in {language}."
-
-    active_openai_model_name = config.get('active_openai_model')
-    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
+    prompt = f"You are a master storyteller. For a {project.get('word_count', 20000)}-word book titled '{project['title']}', generate a detailed, multi-chapter synopsis and a compelling back cover blurb. Return as JSON with keys 'synopsis' and 'back_cover_blurb'. Write all text content in {project.get('language', 'English')}."
 
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
+
         data = json.loads(response.choices[0].message.content)
-        project['synopsis'], project['back_cover_blurb'] = data.get('synopsis', 'Error.'), data.get('back_cover_blurb', 'Error.')
+        project['synopsis'] = data.get('synopsis', 'Error: Could not generate synopsis.')
+        project['back_cover_blurb'] = data.get('back_cover_blurb', 'Error: Could not generate blurb.')
+
     except Exception as e:
         project['synopsis'], project['back_cover_blurb'] = f"An error occurred: {e}", f"An error occurred: {e}"
+
     save_project(project)
     return redirect(url_for('.blueprint', project_id=project_id))
 
@@ -177,35 +189,34 @@ def writing_room(project_id):
     if not project.get('chapters') and project.get('synopsis'):
         project['chapters'] = [{"title": title, "status": "Not Generated", "text": "", "images": []} for title in parse_chapters_from_synopsis(project['synopsis'])]
         save_project(project)
+
     chapter_index = request.args.get('chapter_index', 0, type=int)
-    current_chapter = project['chapters'][chapter_index]
+    current_chapter = project.get('chapters', [])[chapter_index]
     return render_template('writing_room.html', project=project, current_chapter=current_chapter, current_chapter_index=chapter_index)
 
 @fiction_bp.route('/<project_id>/generate_chapter/<int:chapter_index>', methods=['POST'])
 def generate_chapter(project_id, chapter_index):
     config = get_config()
-    model_config = get_model_config()
     llm_client = get_llm_client()
     project = load_project(project_id)
     language = project.get('language', 'English')
-    num_chapters = len(project['chapters'])
+    num_chapters = len(project.get('chapters', []))
     words_per_chapter = int(project.get('word_count', 20000)) / num_chapters if num_chapters > 0 else 2000
-    previous_chapters_text = "\\n\\n".join([ch['text'] for i, ch in enumerate(project['chapters']) if i < chapter_index and ch['status'] == 'Approved'])
+    previous_chapters_text = "\\n\\n".join([ch['text'] for i, ch in enumerate(project.get('chapters', [])) if i < chapter_index and ch.get('status') == 'Approved'])
     context_summary = f"Summary of previous chapters:\\n{previous_chapters_text[:5000]}..." if previous_chapters_text else "This is the first chapter."
     prompt = f"You are a novelist. Write the full text for Chapter {chapter_index + 1}: {project['chapters'][chapter_index]['title']}. Chapter should be ~{words_per_chapter:.0f} words. Write in {language}. Context: {context_summary}."
-
-    active_openai_model_name = config.get('active_openai_model')
-    openai_model_id = next((m['id'] for m in model_config['openai'] if m['name'] == active_openai_model_name), None)
 
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "user", "content": prompt}])
+            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "user", "content": prompt}])
+
         project['chapters'][chapter_index]['text'] = response.choices[0].message.content
         project['chapters'][chapter_index]['status'] = 'Generated'
         save_project(project)
     except Exception as e: print(f"Error generating chapter: {e}")
+
     return redirect(url_for('.writing_room', project_id=project_id, chapter_index=chapter_index))
 
 @fiction_bp.route('/<project_id>/save_chapter/<int:chapter_index>', methods=['POST'])
@@ -214,7 +225,6 @@ def save_chapter(project_id, chapter_index):
     project['chapters'][chapter_index]['text'] = request.form.get('chapter_text')
     project['chapters'][chapter_index]['status'] = 'Approved'
     save_project(project)
-    # Redirect back to the same chapter page
     return redirect(url_for('.writing_room', project_id=project_id, chapter_index=chapter_index))
 
 @fiction_bp.route('/<project_id>/<int:chapter_index>/generate_images', methods=['POST'])
@@ -274,37 +284,19 @@ def build_package(project_id):
 
 @fiction_bp.route('/brainstorm_themes', methods=['POST'])
 def brainstorm_themes():
-    """
-    Calls the LLM to brainstorm a few genre/theme pairs and returns them as JSON.
-    """
     llm_client = get_llm_client()
     config = get_config()
-
     prompt = "Brainstorm 5 interesting and unique genre-and-theme pairs for a new fiction book. For each, provide a 'genre' and a 'theme' (which is a short, evocative description). Return as a JSON object with a single key 'suggestions' which is a list of these pairs."
 
     try:
         if config['provider'] == 'mock':
-            # In a real mock, you'd have structured data here.
-            # For now, let's create some plausible mock suggestions.
-            suggestions = {
-                "suggestions": [
-                    {"genre": "Steampunk", "theme": "A clockwork detective solves a murder in a city powered by steam and secrets."},
-                    {"genre": "Biopunk", "theme": "A group of rebels uses illegal genetic modifications to fight a corporate dystopia."},
-                    {"genre": "Mythic Fantasy", "theme": "A young cartographer discovers that the maps of the old gods are real and lead to other worlds."},
-                    {"genre": "Solarpunk", "theme": "A community of architects builds a sustainable city in harmony with nature after an ecological collapse."},
-                    {"genre": "Gothic Romance", "theme": "A governess in a remote, crumbling manor discovers her employer is haunted by a beautiful, tragic ghost."}
-                ]
-            }
-            response_json = json.dumps(suggestions)
+            response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
         else:
-            response = llm_client.chat.completions.create(
-                model=config.get('active_openai_model'),
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"}
-            )
-            response_json = response.choices[0].message.content
+            response = llm_client.chat.completions.create(model=config.get('active_openai_model'), messages=[{"role": "user", "content": prompt}], response_format={"type": "json_object"})
 
-        return jsonify(json.loads(response_json))
+        response_data = json.loads(response.choices[0].message.content)
+        suggestions = _extract_list_from_json(response_data)
+        return jsonify({"suggestions": suggestions})
 
     except Exception as e:
         print(f"Error brainstorming themes: {e}")
