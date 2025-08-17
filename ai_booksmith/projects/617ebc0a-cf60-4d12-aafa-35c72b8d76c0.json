@@ -1,0 +1,15 @@
+{
+    "id": "617ebc0a-cf60-4d12-aafa-35c72b8d76c0",
+    "book_type": "fiction",
+    "description": "A generation ship, a long journey, a mystery.",
+    "genre": "Science Fiction",
+    "language": "English",
+    "word_count": "20000",
+    "art_style": "Cyberpunk anime",
+    "logline": "A master thief steals memories in a futuristic city.",
+    "title": "The Quantum Thief",
+    "writing_style": "Hard-boiled sci-fi noir",
+    "synopsis": "\n# Chapter 1: The Discovery\nOur hero finds a map. {{image here of a hero finding a map in a library}}\n# Chapter 2: The Journey\nThe hero travels to a new land. {{image here of a hero on a boat}}\n            ",
+    "back_cover_blurb": "A mock blurb for an exciting adventure.",
+    "chapters": []
+}

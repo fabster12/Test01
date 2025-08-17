@@ -20,6 +20,8 @@ def create_app():
     # Register custom Jinja2 filter
     @app.template_filter('nl2br')
     def nl2br(s):
+        if not isinstance(s, str):
+            s = str(s)
         return Markup(re.sub(r'\n', '<br>\n', s))
 
     # Load configuration

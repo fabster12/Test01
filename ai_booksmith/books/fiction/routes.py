@@ -207,11 +207,24 @@ def generate_blueprint(project_id):
             response = llm_client.chat.completions.create(model=openai_model_id, messages=[{"role": "system", "content": "You only respond in JSON."}, {"role": "user", "content": prompt}], response_format={"type": "json_object"})
 
         data = json.loads(response.choices[0].message.content)
-        project['synopsis'] = data.get('synopsis', 'Error: Could not generate synopsis.')
+        synopsis_data = data.get('synopsis')
+
+        if isinstance(synopsis_data, dict):
+            # Convert dict to a markdown-style string
+            synopsis_text = ""
+            for title, text in synopsis_data.items():
+                synopsis_text += f"### {title}\n{text}\n\n"
+            project['synopsis'] = synopsis_text.strip()
+        elif synopsis_data:
+            project['synopsis'] = str(synopsis_data)
+        else:
+            project['synopsis'] = 'Error: Could not generate synopsis.'
+
         project['back_cover_blurb'] = data.get('back_cover_blurb', 'Error: Could not generate blurb.')
 
     except Exception as e:
-        project['synopsis'], project['back_cover_blurb'] = f"An error occurred: {e}", f"An error occurred: {e}"
+        project['synopsis'] = f"An error occurred while generating the synopsis: {e}"
+        project['back_cover_blurb'] = f"An error occurred while generating the blurb: {e}"
 
     save_project(project)
     return redirect(url_for('.blueprint', project_id=project_id))
