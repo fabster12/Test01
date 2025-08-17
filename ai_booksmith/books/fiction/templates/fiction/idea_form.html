@@ -41,14 +41,16 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded and parsed');
+    console.log('DEBUG: DOM content loaded. Initializing script.');
+
     const brainstormBtn = document.getElementById('brainstorm-btn');
-    console.log('Found brainstorm button:', brainstormBtn);
     const suggestionsContainer = document.getElementById('suggestions-container');
     const genreInput = document.getElementById('genre');
     const descriptionInput = document.getElementById('description');
 
-    brainstormBtn.addEventListener('click', function() {
+    if (brainstormBtn) {
+        console.log('DEBUG: Brainstorm button element found:', brainstormBtn);
+        brainstormBtn.addEventListener('click', function() {
         console.log('Brainstorm button clicked.');
         suggestionsContainer.innerHTML = '<p>Brainstorming for you...</p>';
 
@@ -97,7 +99,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             suggestionsContainer.innerHTML = '<p class="text-danger">An error occurred while brainstorming.</p>';
         });
-    });
+    } else {
+        console.error('DEBUG: Brainstorm button element not found!');
+    }
 });
 </script>
 {% endblock %}

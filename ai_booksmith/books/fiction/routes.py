@@ -118,6 +118,16 @@ def generate_ideas():
     form_data = request.form.to_dict()
     prompt = f'You are a creative assistant. Based on Genre: "{form_data["genre"]}" and Description: "{form_data["description"]}", generate 10 book ideas. For each, provide: "title", "logline", "writing_style", "art_style". Return as JSON. Write all text in {form_data["language"]}. The list should be under a key named "ideas".'
 
+    active_openai_model_name = config.get('active_openai_model')
+    print(f"DEBUG: Active OpenAI Model Name from config: {active_openai_model_name}")
+
+    model_config = get_model_config().get('openai', [])
+    openai_model_id = next((m['id'] for m in model_config if m['name'] == active_openai_model_name), None)
+    print(f"DEBUG: Found OpenAI Model ID: {openai_model_id}")
+
+    if not openai_model_id:
+        print(f"ERROR: Could not find a matching model ID for name '{active_openai_model_name}' in models.yaml")
+
     try:
         if config['provider'] == 'mock':
             response = mock_openai_chat_completion(model=None, messages=[{"role":"user", "content":prompt}])
