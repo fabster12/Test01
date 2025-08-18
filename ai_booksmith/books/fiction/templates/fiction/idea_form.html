@@ -13,9 +13,9 @@
         <div id="suggestions-container" class="mt-2"></div>
         <input type="text" id="genre" name="genre" class="form-control" value="{% if theme_data and theme_data.genre %}{{ theme_data.genre }}{% else %}Science Fiction{% endif %}" required>
     </div>
-    <div class="form-group form-check">
-        <input type="checkbox" class="form-check-input" id="niche_switch" name="niche">
-        <label class="form-check-label" for="niche_switch">Make it Niche</label>
+    <div class="form-check">
+        <input type="checkbox" id="niche_switch" name="niche" class="form-check-input">
+        <label for="niche_switch" class="form-check-label">Make it Niche</label>
     </div>
     <div class="form-group">
         <label for="description">Brief Description or Theme</label>

@@ -87,6 +87,24 @@ textarea {
     min-height: 100px;
 }
 
+/* Checkbox Styles */
+.form-check {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check-input {
+    width: 1.25em;
+    height: 1.25em;
+    margin: 0;
+}
+
+.form-check-label {
+    margin-bottom: 0; /* Override label margin for this specific case */
+}
+
 /* Buttons */
 .btn {
     display: inline-block;
