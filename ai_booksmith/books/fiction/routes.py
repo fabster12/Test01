@@ -236,8 +236,15 @@ def writing_room(project_id):
         project['chapters'] = [{"title": title, "status": "Not Generated", "text": "", "images": []} for title in parse_chapters_from_synopsis(project['synopsis'])]
         save_project(project)
 
+    chapters = project.get('chapters', [])
+    if not chapters:
+        return redirect(url_for('.blueprint', project_id=project_id))
+
     chapter_index = request.args.get('chapter_index', 0, type=int)
-    current_chapter = project.get('chapters', [])[chapter_index]
+    if not 0 <= chapter_index < len(chapters):
+        return redirect(url_for('.writing_room', project_id=project_id, chapter_index=0))
+
+    current_chapter = chapters[chapter_index]
     return render_template('writing_room.html', project=project, current_chapter=current_chapter, current_chapter_index=chapter_index)
 
 @fiction_bp.route('/<project_id>/generate_chapter/<int:chapter_index>', methods=['POST'])
