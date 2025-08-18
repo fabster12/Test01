@@ -7,11 +7,11 @@
 <p>Here are some ideas based on your input. Choose one to develop further.</p>
 
 <div class="list-group">
-    {% for idea in ideas %}
+    {% for idea in project.ideas %}
     <div class="list-group-item list-group-item-action">
         <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ idea.title }}</h5>
-            <form action="{{ url_for('fiction.select_idea') }}" method="POST" style="display: inline;">
+            <form action="{{ url_for('fiction.select_idea', project_id=project.id) }}" method="POST" style="display: inline;">
                 <input type="hidden" name="selected_idea_index" value="{{ loop.index0 }}">
                 <button type="submit" class="btn btn-sm btn-success">Select</button>
             </form>
@@ -25,5 +25,5 @@
     {% endfor %}
 </div>
 
-<a href="{{ url_for('fiction.new_project_form') }}" class="btn btn-secondary mt-3">Back to Brainstorming</a>
+<a href="{{ url_for('fiction.idea_form', project_id=project.id) }}" class="btn btn-secondary mt-3">Back to Brainstorming</a>
 {% endblock %}

@@ -6,24 +6,45 @@
 <h2>New Fiction Project</h2>
 <p>Let's brainstorm some ideas for your next book. Fill out the form below to get started.</p>
 
-<form action="{{ url_for('fiction.generate_ideas') }}" method="POST">
+<form action="{{ url_for('fiction.generate_ideas', project_id=project.id) }}" method="POST">
     <div class="form-group">
         <label for="genre">Genre</label>
         <button type="button" id="brainstorm-btn" class="btn btn-secondary btn-sm ml-2">Brainstorm Themes</button>
         <div id="suggestions-container" class="mt-2"></div>
-        <input type="text" id="genre" name="genre" class="form-control" value="{% if theme_data and theme_data.genre %}{{ theme_data.genre }}{% else %}Science Fiction{% endif %}" required>
+        <input type="text" id="genre" name="genre" class="form-control" value="{{ project.genre or 'Science Fiction' }}" list="genre-suggestions" required>
+        <datalist id="genre-suggestions">
+            <option value="Science Fiction">
+            <option value="Fantasy">
+            <option value="Mystery">
+            <option value="Thriller">
+            <option value="Romance">
+            <option value="Horror">
+            <option value="Historical Fiction">
+            <option value="Adventure">
+            <option value="Children's">
+            <option value="Comedy">
+            <option value="Crime">
+            <option value="Dystopian">
+            <option value="Literary Fiction">
+            <option value="Magical Realism">
+            <option value="Paranormal">
+            <option value="Steampunk">
+            <option value="Cyberpunk">
+            <option value="Urban Fantasy">
+            <option value="Young Adult">
+        </datalist>
     </div>
-    <div class="form-check">
-        <input type="checkbox" id="niche_switch" name="niche" class="form-check-input">
+    <div class="form-check form-switch">
+        <input type="checkbox" id="niche_switch" name="niche" class="form-check-input" {% if project.niche == 'on' %}checked{% endif %}>
         <label for="niche_switch" class="form-check-label">Make it Niche</label>
     </div>
     <div class="form-group">
         <label for="description">Brief Description or Theme</label>
-        <textarea id="description" name="description" class="form-control" rows="3" required>{% if theme_data and theme_data.theme %}{{ theme_data.theme }}{% else %}A generation ship, a long journey, a mystery.{% endif %}</textarea>
+        <textarea id="description" name="description" class="form-control" rows="3" required>{{ project.description or 'A generation ship, a long journey, a mystery.' }}</textarea>
     </div>
     <div class="form-group">
         <label for="word_count">Target Word Count</label>
-        <input type="text" id="word_count" name="word_count" class="form-control" list="word_count_options" value="50000" required>
+        <input type="text" id="word_count" name="word_count" class="form-control" list="word_count_options" value="{{ project.word_count or '50000' }}" required>
         <datalist id="word_count_options">
             <option value="20000">Novella (20,000 words)</option>
             <option value="50000">Short Novel (50,000 words)</option>
@@ -33,9 +54,9 @@
     <div class="form-group">
         <label for="language">Language</label>
         <select id="language" name="language" class="form-control">
-            <option value="English">English</option>
-            <option value="Dutch">Dutch</option>
-            <option value="German">German</option>
+            <option value="English" {% if project.language == 'English' %}selected{% endif %}>English</option>
+            <option value="Dutch" {% if project.language == 'Dutch' %}selected{% endif %}>Dutch</option>
+            <option value="German" {% if project.language == 'German' %}selected{% endif %}>German</option>
         </select>
     </div>
     <button type="submit" class="btn btn-primary">Generate Ideas</button>

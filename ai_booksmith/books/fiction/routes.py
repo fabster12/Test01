@@ -133,19 +133,38 @@ def fiction_dashboard():
 
 @fiction_bp.route('/new')
 def new_project_form():
-    theme_data = session.get('selected_theme', {})
-    return render_template('idea_form.html', theme_data=theme_data)
+    project_id = str(uuid.uuid4())
+    project_data = {
+        "id": project_id,
+        "book_type": 'fiction',
+        "creation_step": "idea_form"
+    }
+    save_project(project_data)
+    return redirect(url_for('.idea_form', project_id=project_id))
 
-@fiction_bp.route('/generate_ideas', methods=['POST'])
-def generate_ideas():
+@fiction_bp.route('/<project_id>/idea_form')
+def idea_form(project_id):
+    project = load_project(project_id)
+    if not project:
+        abort(404)
+    return render_template('idea_form.html', project=project)
+
+@fiction_bp.route('/<project_id>/generate_ideas', methods=['POST'])
+def generate_ideas(project_id):
+    project = load_project(project_id)
+    if not project:
+        abort(404)
+
     config = get_config()
     llm_client = get_llm_client()
     form_data = request.form.to_dict()
     is_niche = form_data.get('niche') == 'on'
 
-    niche_instruction = "focus on creating highly specific, niche, and marketable sub-genres and unique concepts that would stand out on Amazon KDP." if is_niche else ""
+    project.update(form_data)
+    project['creation_step'] = 'ideas_list'
 
-    prompt = f'You are a creative assistant. Based on Genre: "{form_data["genre"]}" and Description: "{form_data["description"]}", generate 10 book ideas. {niche_instruction} For each, provide: "title", "logline", "writing_style", "art_style". Return as JSON. Write all text in {form_data["language"]}. The list should be under a key named "ideas".'
+    niche_instruction = "focus on creating highly specific, niche, and marketable sub-genres and unique concepts that would stand out on Amazon KDP." if is_niche else ""
+    prompt = f'You are a creative assistant. Based on Genre: "{form_data["genre"]}" and Description: "{form_data["description"]}", generate 10 book ideas. {niche_instruction} For each, provide: "title", "logline", "writing_style", "art_style". Return as JSON. Write all text in {project.get("language", "English")}. The list should be under a key named "ideas".'
 
     openai_model_id = _get_model_id('openai')
 
@@ -157,34 +176,41 @@ def generate_ideas():
 
         response_data = json.loads(response.choices[0].message.content)
         ideas = _extract_list_from_json(response_data)
+        project['ideas'] = ideas
 
     except Exception as e:
         print(f"Error generating or parsing ideas: {e}")
-        ideas = []
+        project['ideas'] = []
 
-    session['ideas'] = ideas
-    session['project_context'] = form_data
-    return render_template('ideas.html', ideas=ideas)
+    save_project(project)
+    return redirect(url_for('.ideas_list', project_id=project_id))
 
-@fiction_bp.route('/select_idea', methods=['POST'])
-def select_idea():
+@fiction_bp.route('/<project_id>/ideas')
+def ideas_list(project_id):
+    project = load_project(project_id)
+    if not project or 'ideas' not in project:
+        return redirect(url_for('.idea_form', project_id=project_id))
+    return render_template('ideas.html', project=project)
+
+@fiction_bp.route('/<project_id>/select_idea', methods=['POST'])
+def select_idea(project_id):
+    project = load_project(project_id)
+    if not project:
+        abort(404)
+
     selected_index = int(request.form.get('selected_idea_index'))
-    ideas = session.get('ideas', [])
+    ideas = project.get('ideas', [])
     if not ideas or selected_index >= len(ideas):
         return "Error: Invalid idea selected.", 400
 
     selected_idea = ideas[selected_index]
-    project_id = str(uuid.uuid4())
-    project_data = {
-        "id": project_id,
-        "book_type": 'fiction',
-        **session.get('project_context', {}),
-        **selected_idea,
-        "synopsis": "",
-        "back_cover_blurb": "",
-        "chapters": []
-    }
-    save_project(project_data)
+    project.update(selected_idea)
+    project['creation_step'] = 'blueprint'
+    project["synopsis"] = ""
+    project["back_cover_blurb"] = ""
+    project["chapters"] = []
+
+    save_project(project)
     return redirect(url_for('.blueprint', project_id=project_id))
 
 @fiction_bp.route('/<project_id>/blueprint')
