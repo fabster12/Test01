@@ -41,9 +41,17 @@ const convertEntityToJsonSchema = (entity: Entity) => {
   };
 };
 
+interface JsonSchema {
+  $schema: string;
+  title: string;
+  type: string;
+  definitions: { [key: string]: any };
+  properties: { [key: string]: any };
+}
+
 // Main function to convert our entire DataModel to a JSON Schema
 export const convertModelToJsonSchema = (model: DataModel) => {
-  const schema = {
+  const schema: JsonSchema = {
     $schema: 'http://json-schema.org/draft-07/schema#',
     title: 'Data Model',
     type: 'object',

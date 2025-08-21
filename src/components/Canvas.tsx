@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useCallback } from 'react';
-import ReactFlow, { Node, Edge, Connection } from 'reactflow';
+import ReactFlow, { Node, Edge, Connection, MarkerType } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import { ModelContext } from '../context/ModelContext';
@@ -7,24 +7,22 @@ import EntityNode from './EntityNode'; // Import the custom node
 
 const Canvas = () => {
   const context = useContext(ModelContext);
-
-  // Register the custom node type
   const nodeTypes = useMemo(() => ({ entity: EntityNode }), []);
+
+  const onConnect = useCallback(
+    (params: Connection) => {
+      if (context && params.source && params.target) {
+        context.addRelationship({ sourceId: params.source, targetId: params.target, label: 'new relationship' });
+      }
+    },
+    [context]
+  );
 
   if (!context) {
     return <div>Loading...</div>;
   }
 
-  const { model, addEntity, addRelationship, setSelectedElementId } = context;
-
-  const onConnect = useCallback(
-    (params: Connection) => {
-      if (params.source && params.target) {
-        addRelationship({ sourceId: params.source, targetId: params.target, label: 'new relationship' });
-      }
-    },
-    [addRelationship]
-  );
+  const { model, addEntity, setSelectedElementId } = context;
 
   const handleAddEntity = () => {
     const newEntity = {
@@ -55,7 +53,7 @@ const Canvas = () => {
     target: rel.targetId,
     label: rel.label,
     markerEnd: {
-      type: 'arrowclosed',
+      type: MarkerType.ArrowClosed,
     },
   }));
 
@@ -70,7 +68,7 @@ const Canvas = () => {
       type: 'straight',
       style: { stroke: '#9ca3af', strokeDasharray: '5,5' }, // Dashed line for inheritance
       markerEnd: {
-        type: 'arrow', // Open arrow for inheritance
+        type: MarkerType.Arrow, // Open arrow for inheritance
         color: '#9ca3af',
       },
     }));
