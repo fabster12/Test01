@@ -32,7 +32,11 @@ const collectFields = (
   const ownFields = new Map<string, Field>();
   entity.fields.forEach(field => ownFields.set(field.name, field));
 
-  return new Map([...parentFields, ...ownFields]);
+  const combinedMap = new Map(parentFields);
+  ownFields.forEach((value, key) => {
+    combinedMap.set(key, value);
+  });
+  return combinedMap;
 };
 
 /**
